@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valuation de Ações por Setor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- MathJax para exibição de fórmulas matemáticas limpas -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    .has-tooltip { position: relative; }
+    .tooltip-content {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    }
+    .has-tooltip:hover .tooltip-content {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Cabeçalho -->
+    <header class="border-b border-slate-700 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">📈 Valuation de Ações (FCD + Risco Setorial)</h1>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">
+          Precificação de valor teto considerando o Beta do segmento e risco de mercado
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="restaurarCarteiraPadrao()" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow" title="Restaurar ações originais">
+          <i class="fa-solid fa-rotate-left"></i> Resetar p/ Padrão
+        </button>
+        <button onclick="abrirModalSalvar()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar Carteira
+        </button>
+        <button onclick="document.getElementById('inputCarregarFile').click()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-emerald-300 font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5">
+          <i class="fa-solid fa-folder-open"></i> Carregar Arquivo
+        </button>
+        <input type="file" id="inputCarregarFile" accept=".json" class="hidden" onchange="carregarArquivoCarteira(event)">
+      </div>
+    </header>
+
+    <!-- 1. ORIGEM HISTÓRICA E TEÓRICA DOS MÉTODOS (AGORA O PRIMEIRO ITEM) -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleOrigem()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-book-bookmark text-amber-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Origem Histórica e Metodológica (CAPM + FCD)</span>
+        </div>
+        <span id="iconeOrigem" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Origem</span>
+        </span>
+      </button>
+
+      <div id="conteudoOrigem" class="p-5 space-y-4 hidden text-xs leading-relaxed text-slate-300">
+        <p class="text-slate-300">
+          A precificação realizada neste aplicativo une duas das maiores inovações das finanças corporativas modernas:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Bloco CAPM -->
+          <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-sm border-b border-slate-700 pb-2">
+              <i class="fa-solid fa-award"></i> Modelo CAPM & Coeficiente Beta
+            </div>
+            <p>
+              Proposto por <strong>William F. Sharpe</strong> (1964), baseado na Teoria Moderna de Portfólio de <strong>Harry Markowitz</strong> (1952). O modelo quantificou pela primeira vez o risco sistemático de ativos.
+            </p>
+            <p class="text-slate-400 text-[11px] italic">
+              🏆 Sharpe e Markowitz receberam o <strong>Prêmio Nobel de Economia em 1990</strong> por essas contribuições.
+            </p>
+          </div>
+
+          <!-- Bloco FCD -->
+          <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm border-b border-slate-700 pb-2">
+              <i class="fa-solid fa-landmark"></i> Fluxo de Caixa Descontado (FCD)
+            </div>
+            <p>
+              Formalizado para valuation corporativo por <strong>Irving Fisher</strong> (1930) e <strong>John Burr Williams</strong> (1938).
+            </p>
+            <p class="text-slate-400 text-[11px] italic">
+              💡 Define que o valor intrínseco de qualquer ativo equivale ao somatório de todos os seus fluxos de caixa futuros trazidos a valor presente.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-700/80">
+          <strong class="text-cyan-400 block mb-1">🔗 Como os dois métodos se integram no aplicativo?</strong>
+          <p class="text-slate-300 text-[11px]">
+            O <strong>CAPM</strong> fornece a taxa de exigência justa de retorno (<span class="text-amber-300 font-bold">Ke</span>) calibrada pelo risco do setor (<span class="text-amber-300 font-bold">&beta;</span>). Essa taxa é então usada como taxa de desconto no modelo de <strong>Fluxo de Caixa Descontado</strong> para determinar o <strong>Preço Teto</strong> da ação.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. GUIA DIDÁTICO DE RISCO POR SETOR E SUBSETOR -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleDidatico()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-emerald-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Guia Didático Mapeado: Classificação de Betas (&beta;) por Subclasses e Segmentos</span>
+        </div>
+        <span id="iconeDidatico" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Guia</span>
+        </span>
+      </button>
+
+      <div id="conteudoDidatico" class="p-5 space-y-4 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          
+          <!-- Ultradefensivo -->
+          <div class="bg-emerald-950/30 p-3.5 rounded-lg border border-emerald-800/50 space-y-2">
+            <div class="font-bold text-emerald-400 flex items-center gap-1.5 border-b border-emerald-800/60 pb-1.5">
+              🟢 Ultradefensivo (&beta; &lt; 0,70)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Transmissão Elétrica (&beta; 0,40), Saneamento (&beta; 0,55), Bebidas/Alimentos Básico (&beta; 0,60), Farmácias/Saúde (&beta; 0,65).</strong><br>
+              Demanda essencial, blindados contra inflação e juros altos.
+            </p>
+          </div>
+
+          <!-- Defensivo / Neutro -->
+          <div class="bg-blue-950/30 p-3.5 rounded-lg border border-blue-800/50 space-y-2">
+            <div class="font-bold text-blue-400 flex items-center gap-1.5 border-b border-blue-800/60 pb-1.5">
+              🔵 Defensivo a Neutro (&beta; 0,70 - 0,95)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Geração/Distribuição (&beta; 0,70), Telecom (&beta; 0,75), Seguros (&beta; 0,80), Bancos Tradicionais (&beta; 0,85), Holdings (&beta; 0,90).</strong><br>
+              Acompanham a economia com resiliência e bom retorno em proventos.
+            </p>
+          </div>
+
+          <!-- Cíclicos / Industriais -->
+          <div class="bg-amber-950/30 p-3.5 rounded-lg border border-amber-800/50 space-y-2">
+            <div class="font-bold text-amber-400 flex items-center gap-1.5 border-b border-amber-800/60 pb-1.5">
+              🟡 Cíclico e Commodities (&beta; 1,00 - 1,25)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Petróleo Majors (&beta; 1,05), Celulose (&beta; 1,05), Mineração (&beta; 1,15), Autopeças/Logística (&beta; 1,15), Agronegócio (&beta; 1,20).</strong><br>
+              Atrelados ao câmbio, commodities e atividade industrial global.
+            </p>
+          </div>
+
+          <!-- Alta Volatilidade -->
+          <div class="bg-rose-950/30 p-3.5 rounded-lg border border-rose-800/50 space-y-2">
+            <div class="font-bold text-rose-400 flex items-center gap-1.5 border-b border-rose-800/60 pb-1.5">
+              🔴 Crescimento e Volátil (&beta; &ge; 1,30)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Incorporação/Construção (&beta; 1,30), Varejo Discricionário (&beta; 1,40), Fintechs/Meios de Pagamento (&beta; 1,40), E-Commerce (&beta; 1,55), Aéreas (&beta; 1,70).</strong><br>
+              Sensíveis a juros, crédito ao consumo e inovação tecnológica.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. EXPLICAÇÃO METODOLÓGICA E FÓRMULAS -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleCalculo()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-cyan-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Entenda os Cálculos e Variáveis do Valuation</span>
+        </div>
+        <span id="iconeCalculo" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Metodologia</span>
+        </span>
+      </button>
+
+      <div id="conteudoCalculo" class="p-5 space-y-6 hidden text-xs leading-relaxed">
+        
+        <!-- Bloco CAPM -->
+        <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
+          <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-chart-line"></i> 1. Taxa de Retorno Exigida (K<sub>e</sub>) - Modelo CAPM
+          </h3>
+          <p class="text-slate-300">
+            A Taxa Desconto (K<sub>e</sub>) representa o retorno mínimo que o investidor exige para comprar a ação, compensando o risco livre e a volatilidade do setor.
+          </p>
+          <div class="bg-slate-950 p-3 rounded text-center text-amber-300 font-mono text-sm overflow-x-auto border border-amber-900/40">
+            \[ K_e = R_f + (\beta \times \text{ERP}) \]
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-emerald-400">R<sub>f</sub> (Risk-Free Rate):</strong> Taxa Livre de Risco (Ex: NTN-B / Tesouro IPCA+). É o rendimento base sem risco de calote.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-amber-400">&beta; (Beta Setorial):</strong> Mede a sensibilidade do setor em relação ao mercado. &beta; &lt; 1 indica menor risco; &beta; &gt; 1 indica maior risco.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-cyan-400">ERP (Equity Risk Premium):</strong> Prêmio pelo Risco de Ações. É o retorno adicional exigido para investir na renda variável em vez da renda fixa.
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco FCD -->
+        <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
+          <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-coins"></i> 2. Preço Teto por Fluxo de Caixa Descontado (FCD / DFC)
+          </h3>
+          <p class="text-slate-300">
+            O Valor Justo (Preço Teto) é calculado somando o Valor Presente dos fluxos de caixa projetados para os próximos 5 anos mais o Valor Presente da Perpetuidade.
+          </p>
+          <div class="bg-slate-950 p-3 rounded text-center text-emerald-300 font-mono text-sm overflow-x-auto border border-emerald-900/40">
+            \[ \text{Preço Teto} = \sum_{t=1}^{5} \frac{\text{FCFE}_0 \times (1 + g)^t}{(1 + K_e)^t} + \frac{\text{Perpetuidade}}{(1 + K_e)^5} \]
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded text-center text-cyan-300 font-mono text-xs overflow-x-auto border border-cyan-900/40">
+            \[ \text{Perpetuidade} = \frac{\text{FCFE}_5 \times (1 + g_p)}{K_e - g_p} \]
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2">
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-emerald-400">FCFE<sub>0</sub>:</strong> Fluxo de Caixa Livre para o Acionista por Ação atual (caixa líquido gerado).
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-cyan-400">g (Crescimento 5a):</strong> Taxa esperada de crescimento dos lucros/caixa para os próximos 5 anos.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-amber-400">g<sub>p</sub> (Crescimento Perpétuo):</strong> Taxa de crescimento do caixa no longo prazo (geralmente próxima à inflação/PIB).
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-purple-400">Margem de Segurança:</strong> Percentual de desconto entre a cotação atual e o Preço Teto calculado.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Parâmetros Macro do Mercado -->
+    <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-gears text-emerald-400 mr-2"></i> Parâmetros Macro do Mercado</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Taxa Livre de Risco - NTN-B (R<sub>f</sub> %)</label>
+          <input type="number" id="taxaLivreRisco" value="6.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold text-sm focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Prêmio de Risco do Mercado (ERP %)</label>
+          <input type="number" id="premioAcoes" value="5.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold text-sm focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Crescimento Perpétuo (g<sub>p</sub> %)</label>
+          <input type="number" id="crescimentoPerpetuo" value="2.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-cyan-400 font-bold text-sm focus:outline-none focus:border-cyan-500">
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabela de Ações -->
+    <section class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
+      <div class="p-4 bg-slate-900/40 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-200">Ações em Acompanhamento</h2>
+          <span id="totalAcoes" class="text-xs text-slate-400">0 Ações Cadastradas</span>
+        </div>
+        
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="btnAtualizarCotacoes" onclick="buscarCotacoesWeb()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2 shadow">
+            <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar Cotações B3</span>
+          </button>
+          
+          <button onclick="abrirModalNovaAcao()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Adicionar Ação
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900/80 text-slate-400 text-xs uppercase border-b border-slate-700">
+              <th class="p-4">Empresa / Setor</th>
+              <th class="p-4">Cotação Atual</th>
+              <th class="p-4">Caixa Livre (FCFE)</th>
+              <th class="p-4">Crescimento (5a)</th>
+              <th class="p-4">Beta & Exigência (Ke)</th>
+              <th class="p-4">Preço Teto FCD</th>
+              <th class="p-4">Margem</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAcoes" class="divide-y divide-slate-700/50 text-sm">
+            <!-- Renderizado via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL EDITAR / ADICIONAR -->
+  <div id="modalAjuste" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+        <h3 id="modalTitulo" class="text-xl font-bold text-emerald-400">Ajustar Ação</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Ticker</label>
+            <input type="text" id="modalTicker" placeholder="EX: WEGE3" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold uppercase focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Setor / Subclasse de Beta</label>
+            <select id="modalSetor" onchange="aoMudarSetorModal()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
+              
+              <optgroup label="🟢 ULTRADEFENSIVOS (Beta < 0.70)">
+                <option value="Energia (Transmissão)" data-beta="0.40" data-crescimento="4.0">Transmissão Elétrica (Beta 0.40)</option>
+                <option value="Saneamento e Água" data-beta="0.55" data-crescimento="4.0">Saneamento e Água (Beta 0.55)</option>
+                <option value="Bens de Consumo Básico" data-beta="0.60" data-crescimento="4.5">Bens de Consumo Básico / Bebidas (Beta 0.60)</option>
+                <option value="Saúde Básica e Farmácias" data-beta="0.65" data-crescimento="5.0">Saúde Básica / Farmácias (Beta 0.65)</option>
+              </optgroup>
+
+              <optgroup label="🔵 DEFENSIVOS A NEUTROS (Beta 0.70 - 0.95)">
+                <option value="Energia (Geração/Distribuição)" data-beta="0.70" data-crescimento="4.5">Geração / Distribuição Elétrica (Beta 0.70)</option>
+                <option value="Gestão de Resíduos" data-beta="0.75" data-crescimento="5.0">Gestão de Resíduos e Serviços (Beta 0.75)</option>
+                <option value="Telecomunicações (Rede)" data-beta="0.75" data-crescimento="4.0">Telecomunicações / Infra (Beta 0.75)</option>
+                <option value="Seguros e Previdência" data-beta="0.80" data-crescimento="6.0">Seguros e Previdência (Beta 0.80)</option>
+                <option value="Serviços Financeiros / Bancos" data-beta="0.85" data-crescimento="5.0">Bancos Comerciais Tradicionais (Beta 0.85)</option>
+                <option value="Holdings Financeiras" data-beta="0.90" data-crescimento="5.5">Holdings Financeiras (Beta 0.90)</option>
+                <option value="REITs / FIIs de Tijolo" data-beta="0.85" data-crescimento="4.5">REITs / Imóveis de Renda (Beta 0.85)</option>
+              </optgroup>
+
+              <optgroup label="🟡 CÍCLICOS E COMMODITIES (Beta 1.00 - 1.25)">
+                <option value="Distribuição de Combustíveis" data-beta="1.00" data-crescimento="5.0">Distribuição de Combustíveis (Beta 1.00)</option>
+                <option value="Petróleo, Gás e Refino" data-beta="1.05" data-crescimento="4.5">Petróleo & Gás (Majors Integradas) (Beta 1.05)</option>
+                <option value="Papel e Celulose" data-beta="1.05" data-crescimento="4.0">Papel e Celulose (Beta 1.05)</option>
+                <option value="Logística e Concessões" data-beta="1.00" data-crescimento="5.5">Rodovias, Portos e Ferrovias (Beta 1.00)</option>
+                <option value="Mineração e Siderurgia" data-beta="1.15" data-crescimento="4.0">Mineração e Siderurgia (Beta 1.15)</option>
+                <option value="Bens de Capital e Autopeças" data-beta="1.15" data-crescimento="5.5">Bens de Capital, Motores e Peças (Beta 1.15)</option>
+                <option value="Agronegócio / Grãos" data-beta="1.20" data-crescimento="5.0">Agronegócio e Produção agrícola (Beta 1.20)</option>
+              </optgroup>
+
+              <optgroup label="🔴 ALTA VOLATILIDADE E CRESCIMENTO (Beta >= 1.30)">
+                <option value="Incorporação / Construção" data-beta="1.30" data-crescimento="6.0">Incorporação e Construção Civil (Beta 1.30)</option>
+                <option value="Tecnologia (SaaS / Software)" data-beta="1.25" data-crescimento="7.5">Software Corporativo / SaaS (Beta 1.25)</option>
+                <option value="Varejo Discricionário" data-beta="1.40" data-crescimento="6.5">Varejo Discricionário / Moda (Beta 1.40)</option>
+                <option value="Fintechs e Pagamentos" data-beta="1.40" data-crescimento="8.0">Fintechs e Meios de Pagamento (Beta 1.40)</option>
+                <option value="E-Commerce e Plataformas" data-beta="1.55" data-crescimento="9.0">E-Commerce e Marketplace (Beta 1.55)</option>
+                <option value="Turismo e Companhias Aéreas" data-beta="1.70" data-crescimento="5.0">Companhias Aéreas e Viagens (Beta 1.70)</option>
+              </optgroup>
+
+              <optgroup label="🚀 TESES FUTURAS / EMERGENTES">
+                <option value="Infraestrutura de IA / Datacenters" data-beta="1.10" data-crescimento="8.5">Infraestrutura de IA / Datacenters (Beta 1.10)</option>
+                <option value="Energia Renovável e Transição" data-beta="1.30" data-crescimento="7.0">Energia Renovável e Transição (Beta 1.30)</option>
+                <option value="Mobilidade Elétrica e Baterias" data-beta="1.50" data-crescimento="8.0">Mobilidade Elétrica & Baterias (Beta 1.50)</option>
+              </optgroup>
+
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Cotação Atual (R$)</label>
+            <input type="number" id="modalCotacao" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Caixa Livre / Ação (R$)</label>
+            <input type="number" id="modalFcfe" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Beta do Setor (&beta;)</label>
+            <input type="number" id="modalBeta" step="0.05" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-amber-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Crescimento 5a - g (%)</label>
+            <input type="number" id="modalCrescimento" step="0.5" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-cyan-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 flex gap-3">
+        <button onclick="salvarAjusteIndividual()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+          Salvar
+        </button>
+        <button onclick="fecharModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded-lg transition duration-200">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SALVAR -->
+  <div id="modalSalvar" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h3 class="text-lg font-bold text-emerald-400">Salvar Carteira em Arquivo</h3>
+        <button onclick="fecharModalSalvar()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Arquivo</label>
+        <div class="flex items-center gap-1">
+          <input type="text" id="nomeArquivoSalvar" value="carteira-acoes" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-semibold focus:outline-none focus:border-emerald-500">
+          <span class="text-slate-400 text-xs font-mono">.json</span>
+        </div>
+      </div>
+      <button onclick="executarDownloadArquivo()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-download"></i> Baixar Arquivo
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const carteiraInicial = [
+      { ticker: 'BBDC4', setor: 'Serviços Financeiros / Bancos', cotacao: 18.99, fcfe: 2.19, beta: 0.85, crescimento: 5.0 },
+      { ticker: 'BBSE3', setor: 'Seguros e Previdência', cotacao: 42.57, fcfe: 4.73, beta: 0.80, crescimento: 6.0 },
+      { ticker: 'ISAE4', setor: 'Energia (Transmissão)', cotacao: 28.53, fcfe: 3.55, beta: 0.40, crescimento: 4.0 },
+      { ticker: 'CXSE3', setor: 'Seguros e Previdência', cotacao: 22.43, fcfe: 1.46, beta: 0.80, crescimento: 6.5 },
+      { ticker: 'BRAV3', setor: 'Petróleo, Gás e Refino', cotacao: 20.38, fcfe: 0.50, beta: 1.05, crescimento: 4.5 },
+      { ticker: 'BBAS3', setor: 'Serviços Financeiros / Bancos', cotacao: 21.07, fcfe: 2.20, beta: 0.85, crescimento: 5.0 },
+      { ticker: 'SANB11', setor: 'Serviços Financeiros / Bancos', cotacao: 26.94, fcfe: 3.43, beta: 0.85, crescimento: 5.0 },
+      { ticker: 'KLBN3', setor: 'Papel e Celulose', cotacao: 3.59, fcfe: 0.28, beta: 1.05, crescimento: 4.0 },
+      { ticker: 'SANB3', setor: 'Serviços Financeiros / Bancos', cotacao: 13.27, fcfe: 1.71, beta: 0.85, crescimento: 5.0 },
+      { ticker: 'TAEE11', setor: 'Energia (Transmissão)', cotacao: 41.65, fcfe: 4.55, beta: 0.40, crescimento: 4.0 },
+      { ticker: 'KLBN11', setor: 'Papel e Celulose', cotacao: 17.92, fcfe: 1.40, beta: 1.05, crescimento: 4.0 },
+      { ticker: 'ITSA4', setor: 'Holdings Financeiras', cotacao: 13.81, fcfe: 1.51, beta: 0.90, crescimento: 5.5 },
+      { ticker: 'VBBR3', setor: 'Distribuição de Combustíveis', cotacao: 34.90, fcfe: 2.50, beta: 1.00, crescimento: 5.0 },
+      { ticker: 'SLCE3', setor: 'Agronegócio / Grãos', cotacao: 13.98, fcfe: 0.65, beta: 1.20, crescimento: 5.0 },
+      { ticker: 'IRBR3', setor: 'Seguros e Previdência', cotacao: 56.40, fcfe: 4.28, beta: 0.80, crescimento: 6.0 },
+      { ticker: 'SAPR4', setor: 'Saneamento e Água', cotacao: 7.16, fcfe: 0.81, beta: 0.55, crescimento: 4.0 },
+      { ticker: 'SAPR11', setor: 'Saneamento e Água', cotacao: 36.88, fcfe: 4.05, beta: 0.55, crescimento: 4.0 },
+      { ticker: 'CMIG4', setor: 'Energia (Geração/Distribuição)', cotacao: 11.23, fcfe: 1.69, beta: 0.70, crescimento: 4.5 },
+      { ticker: 'CSAN3', setor: 'Holdings Financeiras', cotacao: 3.91, fcfe: -2.40, beta: 0.90, crescimento: 2.0 },
+      { ticker: 'AXIA3', setor: 'Energia (Geração/Distribuição)', cotacao: 51.75, fcfe: 3.24, beta: 0.70, crescimento: 4.5 },
+      { ticker: 'AXIA7', setor: 'Energia (Geração/Distribuição)', cotacao: 50.72, fcfe: 3.24, beta: 0.70, crescimento: 4.5 }
+    ];
+
+    let acoes = [];
+    let ativoEmEdicao = null;
+    const TOKEN_BRAPI = "gMSJqXa15Gq86sfF57JEoo";
+
+    function salvarEstadoLocal() {
+      const estado = {
+        parametrosMacro: {
+          taxaLivreRisco: parseFloat(document.getElementById('taxaLivreRisco').value) || 0,
+          premioAcoes: parseFloat(document.getElementById('premioAcoes').value) || 0,
+          crescimentoPerpetuo: parseFloat(document.getElementById('crescimentoPerpetuo').value) || 0
+        },
+        acoes: acoes
+      };
+      localStorage.setItem('carteiraValuationState', JSON.stringify(estado));
+    }
+
+    function carregarEstadoLocal() {
+      const salvo = localStorage.getItem('carteiraValuationState');
+      if (salvo) {
+        try {
+          const estado = JSON.parse(salvo);
+          if (estado.parametrosMacro) {
+            document.getElementById('taxaLivreRisco').value = estado.parametrosMacro.taxaLivreRisco ?? 6.50;
+            document.getElementById('premioAcoes').value = estado.parametrosMacro.premioAcoes ?? 5.50;
+            document.getElementById('crescimentoPerpetuo').value = estado.parametrosMacro.crescimentoPerpetuo ?? 2.50;
+          }
+          if (Array.isArray(estado.acoes) && estado.acoes.length > 0) {
+            acoes = estado.acoes;
+            return;
+          }
+        } catch(e) {
+          console.warn("Falha ao restaurar dados salvos.");
+        }
+      }
+      acoes = [...carteiraInicial];
+    }
+
+    function restaurarCarteiraPadrao() {
+      if (confirm("Deseja restaurar as ações padrão com a calibração de Betas?")) {
+        acoes = JSON.parse(JSON.stringify(carteiraInicial));
+        renderizarTabela();
+      }
+    }
+
+    function calcularKe(beta) {
+      const rf = parseFloat(document.getElementById('taxaLivreRisco').value) || 6.50;
+      const premio = parseFloat(document.getElementById('premioAcoes').value) || 5.50;
+      return rf + (beta * premio);
+    }
+
+    function calcularFCD(fcfe, crescimentoPct, beta) {
+      if (fcfe <= 0) return 0;
+
+      const g = crescimentoPct / 100;
+      const Ke = calcularKe(beta) / 100;
+      const gp = (parseFloat(document.getElementById('crescimentoPerpetuo').value) || 2.5) / 100;
+
+      if (Ke <= gp) return 0;
+
+      let vpFase1 = 0;
+      let fluxoAtual = fcfe;
+
+      for (let ano = 1; ano <= 5; ano++) {
+        fluxoAtual = fluxoAtual * (1 + g);
+        vpFase1 += fluxoAtual / Math.pow(1 + Ke, ano);
+      }
+
+      const fluxoAno6 = fluxoAtual * (1 + gp);
+      const valorPerpetuidade = fluxoAno6 / (Ke - gp);
+      const vpPerpetuidade = valorPerpetuidade / Math.pow(1 + Ke, 5);
+
+      return vpFase1 + vpPerpetuidade;
+    }
+
+    function aoMudarSetorModal() {
+      const selectSetor = document.getElementById('modalSetor');
+      const opt = selectSetor.options[selectSetor.selectedIndex];
+      const betaSug = opt.getAttribute('data-beta');
+      const crescSug = opt.getAttribute('data-crescimento');
+
+      if (betaSug) document.getElementById('modalBeta').value = betaSug;
+      if (crescSug) document.getElementById('modalCrescimento').value = crescSug;
+    }
+
+    function renderizarTabela() {
+      const tbody = document.getElementById('tabelaAcoes');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      document.getElementById('totalAcoes').innerText = `${acoes.length} Ações Cadastradas`;
+
+      acoes.forEach((acao, index) => {
+        const keCalculado = calcularKe(acao.beta);
+        const precoTeto = calcularFCD(acao.fcfe, acao.crescimento, acao.beta);
+        const margem = precoTeto > 0 ? ((precoTeto - acao.cotacao) / acao.cotacao) * 100 : 0;
+        
+        const isDesconto = precoTeto > 0 && acao.cotacao <= precoTeto;
+        const statusClass = isDesconto ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        const statusTexto = isDesconto ? 'Comprar' : (precoTeto === 0 ? 'Revisar / FCFE < 0' : 'Aguardar');
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-700/40 transition">
+            <td class="p-4">
+              <div class="font-extrabold text-emerald-400 text-base">${acao.ticker}</div>
+              <div class="text-xs text-slate-300 font-medium">${acao.setor}</div>
+            </td>
+            <td class="p-4 font-semibold text-slate-200">R$ ${acao.cotacao.toFixed(2)}</td>
+            <td class="p-4 ${acao.fcfe < 0 ? 'text-rose-400' : 'text-emerald-300'} font-semibold">
+              R$ ${acao.fcfe.toFixed(2)}
+            </td>
+            <td class="p-4 text-cyan-300 font-bold">+${acao.crescimento.toFixed(1)}% a.a.</td>
+            <td class="p-4">
+              <span class="text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-800 px-2 py-0.5 rounded inline-block">
+                Ke: ${keCalculado.toFixed(2)}% a.a.
+              </span>
+              <div class="text-[10px] text-slate-400 font-mono mt-1">
+                Beta: ${acao.beta.toFixed(2)}
+              </div>
+            </td>
+            <td class="p-4 font-bold text-white text-base">R$ ${precoTeto.toFixed(2)}</td>
+            <td class="p-4 ${margem >= 0 && precoTeto > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">
+              ${precoTeto > 0 ? (margem >= 0 ? '+' : '') + margem.toFixed(2) + '%' : 'N/A'}
+            </td>
+            <td class="p-4">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-full border ${statusClass}">
+                ${statusTexto}
+              </span>
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex items-center justify-center gap-3">
+                <button onclick="abrirModalAjuste(${index})" title="Editar" class="text-slate-400 hover:text-emerald-400 transition"><i class="fa-solid fa-sliders"></i></button>
+                <button onclick="excluirAcao(${index})" title="Excluir" class="text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      salvarEstadoLocal();
+    }
+
+    async function buscarCotacoesWeb() {
+      if (acoes.length === 0) return;
+
+      const btn = document.getElementById('btnAtualizarCotacoes');
+      const textoOriginal = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Buscando B3...</span>`;
+
+      try {
+        const symbolsStr = acoes.map(a => a.ticker).join(',');
+        const apiUrl = `https://brapi.dev/api/v2/quote/${encodeURIComponent(symbolsStr)}?token=${encodeURIComponent(TOKEN_BRAPI)}`;
+        
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error("Erro na API");
+
+        const data = await res.json();
+        if (data && data.results) {
+          let atualizados = 0;
+          data.results.forEach(item => {
+            const acao = acoes.find(a => a.ticker === item.symbol);
+            if (acao && item.regularMarketPrice) {
+              acao.cotacao = parseFloat(item.regularMarketPrice);
+              atualizados++;
+            }
+          });
+          renderizarTabela();
+          alert(`Cotações de ${atualizados} ações atualizadas com sucesso via B3!`);
+        }
+      } catch (err) {
+        alert("Não foi possível atualizar as cotações via internet. Você pode editar o valor manualmente clicando no ícone de engrenagem da ação.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+      }
+    }
+
+    function toggleOrigem() {
+      const conteudo = document.getElementById('conteudoOrigem');
+      const icone = document.getElementById('iconeOrigem');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Origem</span>';
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Origem</span>';
+      }
+    }
+
+    function toggleDidatico() {
+      const conteudo = document.getElementById('conteudoDidatico');
+      const icone = document.getElementById('iconeDidatico');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Guia</span>';
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Guia</span>';
+      }
+    }
+
+    function toggleCalculo() {
+      const conteudo = document.getElementById('conteudoCalculo');
+      const icone = document.getElementById('iconeCalculo');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Metodologia</span>';
+        if (window.MathJax && MathJax.typesetPromise) {
+          MathJax.typesetPromise();
+        }
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Metodologia</span>';
+      }
+    }
+
+    function abrirModalAjuste(index) {
+      ativoEmEdicao = index;
+      const acao = acoes[index];
+      
+      document.getElementById('modalTitulo').innerText = `Ajustar ${acao.ticker}`;
+      document.getElementById('modalTicker').value = acao.ticker;
+      document.getElementById('modalSetor').value = acao.setor;
+      document.getElementById('modalCotacao').value = acao.cotacao;
+      document.getElementById('modalFcfe').value = acao.fcfe;
+      document.getElementById('modalBeta').value = acao.beta;
+      document.getElementById('modalCrescimento').value = acao.crescimento;
+
+      document.getElementById('modalAjuste').classList.remove('hidden');
+    }
+
+    function abrirModalNovaAcao() {
+      ativoEmEdicao = null;
+      document.getElementById('modalTitulo').innerText = "Adicionar Nova Ação";
+      document.getElementById('modalTicker').value = "";
+      document.getElementById('modalSetor').value = "Energia (Transmissão)";
+      document.getElementById('modalCotacao').value = "";
+      document.getElementById('modalFcfe').value = "";
+      document.getElementById('modalBeta').value = "0.40";
+      document.getElementById('modalCrescimento').value = "4.0";
+
+      document.getElementById('modalAjuste').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalAjuste').classList.add('hidden');
+      ativoEmEdicao = null;
+    }
+
+    function salvarAjusteIndividual() {
+      const ticker = document.getElementById('modalTicker').value.trim().toUpperCase();
+      const setor = document.getElementById('modalSetor').value;
+      const cotacao = parseFloat(document.getElementById('modalCotacao').value) || 0;
+      const fcfe = parseFloat(document.getElementById('modalFcfe').value) || 0;
+      const beta = parseFloat(document.getElementById('modalBeta').value) || 1.0;
+      const crescimento = parseFloat(document.getElementById('modalCrescimento').value) || 0;
+
+      if (!ticker) {
+        alert("Por favor, informe o Ticker da ação.");
+        return;
+      }
+
+      const dadosAcao = { ticker, setor, cotacao, fcfe, beta, crescimento };
+
+      if (ativoEmEdicao !== null) {
+        acoes[ativoEmEdicao] = dadosAcao;
+      } else {
+        acoes.push(dadosAcao);
+      }
+
+      renderizarTabela();
+      fecharModal();
+    }
+
+    function excluirAcao(index) {
+      if (confirm(`Remover ação ${acoes[index].ticker}?`)) {
+        acoes.splice(index, 1);
+        renderizarTabela();
+      }
+    }
+
+    function abrirModalSalvar() { document.getElementById('modalSalvar').classList.remove('hidden'); }
+    function fecharModalSalvar() { document.getElementById('modalSalvar').classList.add('hidden'); }
+
+    function executarDownloadArquivo() {
+      let nomeArq = document.getElementById('nomeArquivoSalvar').value.trim() || "carteira-acoes";
+      if (!nomeArq.endsWith('.json')) nomeArq += '.json';
+
+      const backupData = {
+        parametrosMacro: {
+          taxaLivreRisco: parseFloat(document.getElementById('taxaLivreRisco').value) || 0,
+          premioAcoes: parseFloat(document.getElementById('premioAcoes').value) || 0,
+          crescimentoPerpetuo: parseFloat(document.getElementById('crescimentoPerpetuo').value) || 0
+        },
+        acoes: acoes
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nomeArq;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      fecharModalSalvar();
+    }
+
+    function carregarArquivoCarteira(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.parametrosMacro) {
+            document.getElementById('taxaLivreRisco').value = data.parametrosMacro.taxaLivreRisco ?? 6.50;
+            document.getElementById('premioAcoes').value = data.parametrosMacro.premioAcoes ?? 5.50;
+            document.getElementById('crescimentoPerpetuo').value = data.parametrosMacro.crescimentoPerpetuo ?? 2.50;
+          }
+
+          if (Array.isArray(data.acoes)) {
+            acoes = data.acoes;
+            renderizarTabela();
+            alert("Carteira carregada com sucesso!");
+          }
+        } catch (err) {
+          alert("Erro ao ler o arquivo JSON.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarEstadoLocal();
+      renderizarTabela();
+    });
+  </script>
+</body>
+</html>
