@@ -7,16 +7,27 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
-  <!-- MathJax para exibição de fórmulas matemáticas limpas -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- MathJax sem Polyfill (Cloudflare cdnjs) -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
 
   <style>
+    /* Tooltip Customizado (Mensagem Oculta) */
     .has-tooltip { position: relative; }
     .tooltip-content {
       visibility: hidden;
       opacity: 0;
       transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      z-index: 50;
     }
     .has-tooltip:hover .tooltip-content {
       visibility: visible;
@@ -37,7 +48,7 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="restaurarCarteiraPadrao()" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow" title="Restaurar ações originais">
+        <button onclick="restaurarCarteiraPadrao()" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-rotate-left"></i> Resetar p/ Padrão
         </button>
         <button onclick="abrirModalSalvar()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow">
@@ -50,7 +61,7 @@
       </div>
     </header>
 
-    <!-- 1. ORIGEM HISTÓRICA E TEÓRICA DOS MÉTODOS (AGORA O PRIMEIRO ITEM) -->
+    <!-- 1. ORIGEM HISTÓRICA E TEÓRICA DOS MÉTODOS -->
     <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
       <button onclick="toggleOrigem()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
         <div class="flex items-center gap-2">
@@ -68,7 +79,6 @@
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Bloco CAPM -->
           <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
             <div class="flex items-center gap-2 text-amber-400 font-bold text-sm border-b border-slate-700 pb-2">
               <i class="fa-solid fa-award"></i> Modelo CAPM & Coeficiente Beta
@@ -81,7 +91,6 @@
             </p>
           </div>
 
-          <!-- Bloco FCD -->
           <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
             <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm border-b border-slate-700 pb-2">
               <i class="fa-solid fa-landmark"></i> Fluxo de Caixa Descontado (FCD)
@@ -119,7 +128,6 @@
       <div id="conteudoDidatico" class="p-5 space-y-4 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           
-          <!-- Ultradefensivo -->
           <div class="bg-emerald-950/30 p-3.5 rounded-lg border border-emerald-800/50 space-y-2">
             <div class="font-bold text-emerald-400 flex items-center gap-1.5 border-b border-emerald-800/60 pb-1.5">
               🟢 Ultradefensivo (&beta; &lt; 0,70)
@@ -130,7 +138,6 @@
             </p>
           </div>
 
-          <!-- Defensivo / Neutro -->
           <div class="bg-blue-950/30 p-3.5 rounded-lg border border-blue-800/50 space-y-2">
             <div class="font-bold text-blue-400 flex items-center gap-1.5 border-b border-blue-800/60 pb-1.5">
               🔵 Defensivo a Neutro (&beta; 0,70 - 0,95)
@@ -141,7 +148,6 @@
             </p>
           </div>
 
-          <!-- Cíclicos / Industriais -->
           <div class="bg-amber-950/30 p-3.5 rounded-lg border border-amber-800/50 space-y-2">
             <div class="font-bold text-amber-400 flex items-center gap-1.5 border-b border-amber-800/60 pb-1.5">
               🟡 Cíclico e Commodities (&beta; 1,00 - 1,25)
@@ -152,7 +158,6 @@
             </p>
           </div>
 
-          <!-- Alta Volatilidade -->
           <div class="bg-rose-950/30 p-3.5 rounded-lg border border-rose-800/50 space-y-2">
             <div class="font-bold text-rose-400 flex items-center gap-1.5 border-b border-rose-800/60 pb-1.5">
               🔴 Crescimento e Volátil (&beta; &ge; 1,30)
@@ -181,7 +186,6 @@
 
       <div id="conteudoCalculo" class="p-5 space-y-6 hidden text-xs leading-relaxed">
         
-        <!-- Bloco CAPM -->
         <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
           <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
             <i class="fa-solid fa-chart-line"></i> 1. Taxa de Retorno Exigida (K<sub>e</sub>) - Modelo CAPM
@@ -206,7 +210,6 @@
           </div>
         </div>
 
-        <!-- Bloco FCD -->
         <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
           <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
             <i class="fa-solid fa-coins"></i> 2. Preço Teto por Fluxo de Caixa Descontado (FCD / DFC)
@@ -232,7 +235,7 @@
               <strong class="text-amber-400">g<sub>p</sub> (Crescimento Perpétuo):</strong> Taxa de crescimento do caixa no longo prazo (geralmente próxima à inflação/PIB).
             </div>
             <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
-              <strong class="text-purple-400">Margem de Segurança:</strong> Percentual de desconto entre a cotação atual e o Preço Teto calculado.
+              <strong class="text-purple-400">Margem de Segurança:</strong> Percentual de desconto entre a cotação atual e o Preço Teto calculated.
             </div>
           </div>
         </div>
@@ -271,8 +274,8 @@
         </div>
         
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button id="btnAtualizarCotacoes" onclick="buscarCotacoesWeb()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2 shadow">
-            <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar Cotações B3</span>
+          <button id="btnAtualizarCotacoes" onclick="buscarCotacoesYahoo()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2 shadow">
+            <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar Cotações (Yahoo Finance)</span>
           </button>
           
           <button onclick="abrirModalNovaAcao()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2">
@@ -321,48 +324,48 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Setor / Subclasse de Beta</label>
-            <select id="modalSetor" onchange="aoMudarSetorModal()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
+            <select id="modalSetor" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
               
               <optgroup label="🟢 ULTRADEFENSIVOS (Beta < 0.70)">
-                <option value="Energia (Transmissão)" data-beta="0.40" data-crescimento="4.0">Transmissão Elétrica (Beta 0.40)</option>
-                <option value="Saneamento e Água" data-beta="0.55" data-crescimento="4.0">Saneamento e Água (Beta 0.55)</option>
-                <option value="Bens de Consumo Básico" data-beta="0.60" data-crescimento="4.5">Bens de Consumo Básico / Bebidas (Beta 0.60)</option>
-                <option value="Saúde Básica e Farmácias" data-beta="0.65" data-crescimento="5.0">Saúde Básica / Farmácias (Beta 0.65)</option>
+                <option value="Energia (Transmissão)">Transmissão Elétrica (Beta 0.40)</option>
+                <option value="Saneamento e Água">Saneamento e Água (Beta 0.55)</option>
+                <option value="Bens de Consumo Básico">Bens de Consumo Básico / Bebidas (Beta 0.60)</option>
+                <option value="Saúde Básica e Farmácias">Saúde Básica / Farmácias (Beta 0.65)</option>
               </optgroup>
 
               <optgroup label="🔵 DEFENSIVOS A NEUTROS (Beta 0.70 - 0.95)">
-                <option value="Energia (Geração/Distribuição)" data-beta="0.70" data-crescimento="4.5">Geração / Distribuição Elétrica (Beta 0.70)</option>
-                <option value="Gestão de Resíduos" data-beta="0.75" data-crescimento="5.0">Gestão de Resíduos e Serviços (Beta 0.75)</option>
-                <option value="Telecomunicações (Rede)" data-beta="0.75" data-crescimento="4.0">Telecomunicações / Infra (Beta 0.75)</option>
-                <option value="Seguros e Previdência" data-beta="0.80" data-crescimento="6.0">Seguros e Previdência (Beta 0.80)</option>
-                <option value="Serviços Financeiros / Bancos" data-beta="0.85" data-crescimento="5.0">Bancos Comerciais Tradicionais (Beta 0.85)</option>
-                <option value="Holdings Financeiras" data-beta="0.90" data-crescimento="5.5">Holdings Financeiras (Beta 0.90)</option>
-                <option value="REITs / FIIs de Tijolo" data-beta="0.85" data-crescimento="4.5">REITs / Imóveis de Renda (Beta 0.85)</option>
+                <option value="Energia (Geração/Distribuição)">Geração / Distribuição Elétrica (Beta 0.70)</option>
+                <option value="Gestão de Resíduos">Gestão de Resíduos e Serviços (Beta 0.75)</option>
+                <option value="Telecomunicações (Rede)">Telecomunicações / Infra (Beta 0.75)</option>
+                <option value="Seguros e Previdência">Seguros e Previdência (Beta 0.80)</option>
+                <option value="Serviços Financeiros / Bancos">Bancos Comerciais Tradicionais (Beta 0.85)</option>
+                <option value="Holdings Financeiras">Holdings Financeiras (Beta 0.90)</option>
+                <option value="REITs / FIIs de Tijolo">REITs / Imóveis de Renda (Beta 0.85)</option>
               </optgroup>
 
               <optgroup label="🟡 CÍCLICOS E COMMODITIES (Beta 1.00 - 1.25)">
-                <option value="Distribuição de Combustíveis" data-beta="1.00" data-crescimento="5.0">Distribuição de Combustíveis (Beta 1.00)</option>
-                <option value="Petróleo, Gás e Refino" data-beta="1.05" data-crescimento="4.5">Petróleo & Gás (Majors Integradas) (Beta 1.05)</option>
-                <option value="Papel e Celulose" data-beta="1.05" data-crescimento="4.0">Papel e Celulose (Beta 1.05)</option>
-                <option value="Logística e Concessões" data-beta="1.00" data-crescimento="5.5">Rodovias, Portos e Ferrovias (Beta 1.00)</option>
-                <option value="Mineração e Siderurgia" data-beta="1.15" data-crescimento="4.0">Mineração e Siderurgia (Beta 1.15)</option>
-                <option value="Bens de Capital e Autopeças" data-beta="1.15" data-crescimento="5.5">Bens de Capital, Motores e Peças (Beta 1.15)</option>
-                <option value="Agronegócio / Grãos" data-beta="1.20" data-crescimento="5.0">Agronegócio e Produção agrícola (Beta 1.20)</option>
+                <option value="Distribuição de Combustíveis">Distribuição de Combustíveis (Beta 1.00)</option>
+                <option value="Petróleo, Gás e Refino">Petróleo & Gás (Majors Integradas) (Beta 1.05)</option>
+                <option value="Papel e Celulose">Papel e Celulose (Beta 1.05)</option>
+                <option value="Logística e Concessões">Rodovias, Portos e Ferrovias (Beta 1.00)</option>
+                <option value="Mineração e Siderurgia">Mineração e Siderurgia (Beta 1.15)</option>
+                <option value="Bens de Capital e Autopeças">Bens de Capital, Motores e Peças (Beta 1.15)</option>
+                <option value="Agronegócio / Grãos">Agronegócio e Produção agrícola (Beta 1.20)</option>
               </optgroup>
 
               <optgroup label="🔴 ALTA VOLATILIDADE E CRESCIMENTO (Beta >= 1.30)">
-                <option value="Incorporação / Construção" data-beta="1.30" data-crescimento="6.0">Incorporação e Construção Civil (Beta 1.30)</option>
-                <option value="Tecnologia (SaaS / Software)" data-beta="1.25" data-crescimento="7.5">Software Corporativo / SaaS (Beta 1.25)</option>
-                <option value="Varejo Discricionário" data-beta="1.40" data-crescimento="6.5">Varejo Discricionário / Moda (Beta 1.40)</option>
-                <option value="Fintechs e Pagamentos" data-beta="1.40" data-crescimento="8.0">Fintechs e Meios de Pagamento (Beta 1.40)</option>
-                <option value="E-Commerce e Plataformas" data-beta="1.55" data-crescimento="9.0">E-Commerce e Marketplace (Beta 1.55)</option>
-                <option value="Turismo e Companhias Aéreas" data-beta="1.70" data-crescimento="5.0">Companhias Aéreas e Viagens (Beta 1.70)</option>
+                <option value="Incorporação / Construção">Incorporação e Construção Civil (Beta 1.30)</option>
+                <option value="Tecnologia (SaaS / Software)">Software Corporativo / SaaS (Beta 1.25)</option>
+                <option value="Varejo Discricionário">Varejo Discricionário / Moda (Beta 1.40)</option>
+                <option value="Fintechs e Pagamentos">Fintechs e Meios de Pagamento (Beta 1.40)</option>
+                <option value="E-Commerce e Plataformas">E-Commerce e Marketplace (Beta 1.55)</option>
+                <option value="Turismo e Companhias Aéreas">Companhias Aéreas e Viagens (Beta 1.70)</option>
               </optgroup>
 
               <optgroup label="🚀 TESES FUTURAS / EMERGENTES">
-                <option value="Infraestrutura de IA / Datacenters" data-beta="1.10" data-crescimento="8.5">Infraestrutura de IA / Datacenters (Beta 1.10)</option>
-                <option value="Energia Renovável e Transição" data-beta="1.30" data-crescimento="7.0">Energia Renovável e Transição (Beta 1.30)</option>
-                <option value="Mobilidade Elétrica e Baterias" data-beta="1.50" data-crescimento="8.0">Mobilidade Elétrica & Baterias (Beta 1.50)</option>
+                <option value="Infraestrutura de IA / Datacenters">Infraestrutura de IA / Datacenters (Beta 1.10)</option>
+                <option value="Energia Renovável e Transição">Energia Renovável e Transição (Beta 1.30)</option>
+                <option value="Mobilidade Elétrica e Baterias">Mobilidade Elétrica & Baterias (Beta 1.50)</option>
               </optgroup>
 
             </select>
@@ -425,32 +428,31 @@
 
   <script>
     const carteiraInicial = [
-      { ticker: 'BBDC4', setor: 'Serviços Financeiros / Bancos', cotacao: 18.99, fcfe: 2.19, beta: 0.85, crescimento: 5.0 },
-      { ticker: 'BBSE3', setor: 'Seguros e Previdência', cotacao: 42.57, fcfe: 4.73, beta: 0.80, crescimento: 6.0 },
-      { ticker: 'ISAE4', setor: 'Energia (Transmissão)', cotacao: 28.53, fcfe: 3.55, beta: 0.40, crescimento: 4.0 },
-      { ticker: 'CXSE3', setor: 'Seguros e Previdência', cotacao: 22.43, fcfe: 1.46, beta: 0.80, crescimento: 6.5 },
-      { ticker: 'BRAV3', setor: 'Petróleo, Gás e Refino', cotacao: 20.38, fcfe: 0.50, beta: 1.05, crescimento: 4.5 },
-      { ticker: 'BBAS3', setor: 'Serviços Financeiros / Bancos', cotacao: 21.07, fcfe: 2.20, beta: 0.85, crescimento: 5.0 },
-      { ticker: 'SANB11', setor: 'Serviços Financeiros / Bancos', cotacao: 26.94, fcfe: 3.43, beta: 0.85, crescimento: 5.0 },
-      { ticker: 'KLBN3', setor: 'Papel e Celulose', cotacao: 3.59, fcfe: 0.28, beta: 1.05, crescimento: 4.0 },
-      { ticker: 'SANB3', setor: 'Serviços Financeiros / Bancos', cotacao: 13.27, fcfe: 1.71, beta: 0.85, crescimento: 5.0 },
-      { ticker: 'TAEE11', setor: 'Energia (Transmissão)', cotacao: 41.65, fcfe: 4.55, beta: 0.40, crescimento: 4.0 },
-      { ticker: 'KLBN11', setor: 'Papel e Celulose', cotacao: 17.92, fcfe: 1.40, beta: 1.05, crescimento: 4.0 },
-      { ticker: 'ITSA4', setor: 'Holdings Financeiras', cotacao: 13.81, fcfe: 1.51, beta: 0.90, crescimento: 5.5 },
-      { ticker: 'VBBR3', setor: 'Distribuição de Combustíveis', cotacao: 34.90, fcfe: 2.50, beta: 1.00, crescimento: 5.0 },
-      { ticker: 'SLCE3', setor: 'Agronegócio / Grãos', cotacao: 13.98, fcfe: 0.65, beta: 1.20, crescimento: 5.0 },
-      { ticker: 'IRBR3', setor: 'Seguros e Previdência', cotacao: 56.40, fcfe: 4.28, beta: 0.80, crescimento: 6.0 },
-      { ticker: 'SAPR4', setor: 'Saneamento e Água', cotacao: 7.16, fcfe: 0.81, beta: 0.55, crescimento: 4.0 },
-      { ticker: 'SAPR11', setor: 'Saneamento e Água', cotacao: 36.88, fcfe: 4.05, beta: 0.55, crescimento: 4.0 },
-      { ticker: 'CMIG4', setor: 'Energia (Geração/Distribuição)', cotacao: 11.23, fcfe: 1.69, beta: 0.70, crescimento: 4.5 },
-      { ticker: 'CSAN3', setor: 'Holdings Financeiras', cotacao: 3.91, fcfe: -2.40, beta: 0.90, crescimento: 2.0 },
-      { ticker: 'AXIA3', setor: 'Energia (Geração/Distribuição)', cotacao: 51.75, fcfe: 3.24, beta: 0.70, crescimento: 4.5 },
-      { ticker: 'AXIA7', setor: 'Energia (Geração/Distribuição)', cotacao: 50.72, fcfe: 3.24, beta: 0.70, crescimento: 4.5 }
+      { ticker: 'BBDC4', setor: 'Serviços Financeiros / Bancos', cotacao: 18.99, fcfe: 2.19, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BBSE3', setor: 'Seguros e Previdência', cotacao: 42.57, fcfe: 4.73, beta: 0.80, crescimento: 6.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'ISAE4', setor: 'Energia (Transmissão)', cotacao: 28.53, fcfe: 3.55, beta: 0.40, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CXSE3', setor: 'Seguros e Previdência', cotacao: 22.43, fcfe: 1.46, beta: 0.80, crescimento: 6.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BRAV3', setor: 'Petróleo, Gás e Refino', cotacao: 20.38, fcfe: 0.50, beta: 1.05, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BBAS3', setor: 'Serviços Financeiros / Bancos', cotacao: 21.07, fcfe: 2.20, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SANB11', setor: 'Serviços Financeiros / Bancos', cotacao: 26.94, fcfe: 3.43, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'KLBN3', setor: 'Papel e Celulose', cotacao: 3.59, fcfe: 0.28, beta: 1.05, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SANB3', setor: 'Serviços Financeiros / Bancos', cotacao: 13.27, fcfe: 1.71, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'TAEE11', setor: 'Energia (Transmissão)', cotacao: 41.65, fcfe: 4.55, beta: 0.40, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'KLBN11', setor: 'Papel e Celulose', cotacao: 17.92, fcfe: 1.40, beta: 1.05, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'ITSA4', setor: 'Holdings Financeiras', cotacao: 13.81, fcfe: 1.51, beta: 0.90, crescimento: 5.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'VBBR3', setor: 'Distribuição de Combustíveis', cotacao: 34.90, fcfe: 2.50, beta: 1.00, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SLCE3', setor: 'Agronegócio / Grãos', cotacao: 13.98, fcfe: 0.65, beta: 1.20, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'IRBR3', setor: 'Seguros e Previdência', cotacao: 56.40, fcfe: 4.28, beta: 0.80, crescimento: 6.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SAPR4', setor: 'Saneamento e Água', cotacao: 7.16, fcfe: 0.81, beta: 0.55, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SAPR11', setor: 'Saneamento e Água', cotacao: 36.88, fcfe: 4.05, beta: 0.55, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CMIG4', setor: 'Energia (Geração/Distribuição)', cotacao: 11.23, fcfe: 1.69, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CSAN3', setor: 'Holdings Financeiras', cotacao: 3.91, fcfe: -2.40, beta: 0.90, crescimento: 2.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'AXIA3', setor: 'Energia (Geração/Distribuição)', cotacao: 51.75, fcfe: 3.24, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'AXIA7', setor: 'Energia (Geração/Distribuição)', cotacao: 50.72, fcfe: 3.24, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null }
     ];
 
     let acoes = [];
     let ativoEmEdicao = null;
-    const TOKEN_BRAPI = "gMSJqXa15Gq86sfF57JEoo";
 
     function salvarEstadoLocal() {
       const estado = {
@@ -482,7 +484,7 @@
           console.warn("Falha ao restaurar dados salvos.");
         }
       }
-      acoes = [...carteiraInicial];
+      acoes = JSON.parse(JSON.stringify(carteiraInicial));
     }
 
     function restaurarCarteiraPadrao() {
@@ -522,16 +524,6 @@
       return vpFase1 + vpPerpetuidade;
     }
 
-    function aoMudarSetorModal() {
-      const selectSetor = document.getElementById('modalSetor');
-      const opt = selectSetor.options[selectSetor.selectedIndex];
-      const betaSug = opt.getAttribute('data-beta');
-      const crescSug = opt.getAttribute('data-crescimento');
-
-      if (betaSug) document.getElementById('modalBeta').value = betaSug;
-      if (crescSug) document.getElementById('modalCrescimento').value = crescSug;
-    }
-
     function renderizarTabela() {
       const tbody = document.getElementById('tabelaAcoes');
       if (!tbody) return;
@@ -547,10 +539,33 @@
         const statusClass = isDesconto ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
         const statusTexto = isDesconto ? 'Comprar' : (precoTeto === 0 ? 'Revisar / FCFE < 0' : 'Aguardar');
 
+        // ÍCONE E MENSAGEM OCULTA (TOOLTIP) DE ATUALIZAÇÃO
+        let sinalVisual = '';
+        if (acao.statusApi === 'sucesso') {
+          sinalVisual = `
+            <div class="has-tooltip inline-flex items-center ml-1.5 cursor-help">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+              <div class="tooltip-content bg-slate-950 text-emerald-300 text-[11px] font-mono py-1 px-2.5 rounded shadow-xl border border-emerald-800/80">
+                🔒 Mensagem Oculta: Valor atualizado via Yahoo Finance às ${acao.ultimaAtualizacao || 'recém-atualizado'}
+              </div>
+            </div>`;
+        } else if (acao.statusApi === 'erro') {
+          sinalVisual = `
+            <div class="has-tooltip inline-flex items-center ml-1.5 cursor-help">
+              <i class="fa-solid fa-circle-exclamation text-rose-400 text-xs"></i>
+              <div class="tooltip-content bg-slate-950 text-rose-300 text-[11px] font-mono py-1 px-2.5 rounded shadow-xl border border-rose-800/80">
+                ⚠️ Mensagem Oculta: Erro/Rate Limit ao atualizar este ticker. Mantido valor armazenado.
+              </div>
+            </div>`;
+        }
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-700/40 transition">
             <td class="p-4">
-              <div class="font-extrabold text-emerald-400 text-base">${acao.ticker}</div>
+              <div class="font-extrabold text-emerald-400 text-base flex items-center">
+                ${acao.ticker}
+                ${sinalVisual}
+              </div>
               <div class="text-xs text-slate-300 font-medium">${acao.setor}</div>
             </td>
             <td class="p-4 font-semibold text-slate-200">R$ ${acao.cotacao.toFixed(2)}</td>
@@ -588,40 +603,102 @@
       salvarEstadoLocal();
     }
 
-    async function buscarCotacoesWeb() {
+    // Função utilitária para pausar a execução entre os lotes de requisições
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+    /**
+     * Função para buscar cotação de um único ativo com tratamento de erros/429
+     */
+    async function buscarCotacaoAtivo(acao) {
+      const tickerYahoo = acao.ticker.includes('.') ? acao.ticker : `${acao.ticker}.SA`;
+      const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}?interval=1d&range=1d`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+      try {
+        const res = await fetch(proxyUrl);
+        
+        if (res.status === 429) {
+          console.warn(`[429] Rate limit atingido para ${acao.ticker}.`);
+          return false;
+        }
+
+        if (res.ok) {
+          const wrapper = await res.json();
+          const data = JSON.parse(wrapper.contents);
+
+          if (data?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+            const novoPreco = parseFloat(data.chart.result[0].meta.regularMarketPrice);
+            if (novoPreco > 0) {
+              acao.cotacao = novoPreco;
+              acao.statusApi = 'sucesso';
+              acao.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
+              return true;
+            }
+          }
+        }
+        acao.statusApi = 'erro';
+        return false;
+      } catch (e) {
+        acao.statusApi = 'erro';
+        return false;
+      }
+    }
+
+    /**
+     * Atualização de Cotações em Lotes Sequenciais (Throttling)
+     * Reseta os sinais visuais antes de iniciar para feedback em tempo real.
+     */
+    async function buscarCotacoesYahoo() {
       if (acoes.length === 0) return;
 
       const btn = document.getElementById('btnAtualizarCotacoes');
       const textoOriginal = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Buscando B3...</span>`;
 
-      try {
-        const symbolsStr = acoes.map(a => a.ticker).join(',');
-        const apiUrl = `https://brapi.dev/api/v2/quote/${encodeURIComponent(symbolsStr)}?token=${encodeURIComponent(TOKEN_BRAPI)}`;
-        
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error("Erro na API");
+      // 1. Limpa os sinais de procuras anteriores de TODAS as ações
+      acoes.forEach(acao => {
+        acao.statusApi = null;
+        acao.ultimaAtualizacao = null;
+      });
+      
+      // Renderiza a tabela limpa imediatamente
+      renderizarTabela();
 
-        const data = await res.json();
-        if (data && data.results) {
-          let atualizados = 0;
-          data.results.forEach(item => {
-            const acao = acoes.find(a => a.ticker === item.symbol);
-            if (acao && item.regularMarketPrice) {
-              acao.cotacao = parseFloat(item.regularMarketPrice);
-              atualizados++;
-            }
-          });
-          renderizarTabela();
-          alert(`Cotações de ${atualizados} ações atualizadas com sucesso via B3!`);
+      let atualizados = 0;
+      let erros = 0;
+      
+      const tamanhoLote = 3;   // Tamanho do lote de ativos
+      const tempoDelay = 400;  // Pausa (ms) entre cada lote
+
+      // 2. Inicia o processamento em lotes inserindo o resultado progressivamente
+      for (let i = 0; i < acoes.length; i += tamanhoLote) {
+        const lote = acoes.slice(i, i + tamanhoLote);
+        const fim = Math.min(i + tamanhoLote, acoes.length);
+
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Consultando ${fim} de ${acoes.length}...</span>`;
+
+        // Executa o lote atual em paralelo
+        const resultadosLote = await Promise.all(lote.map(acao => buscarCotacaoAtivo(acao)));
+
+        // Contabiliza sucessos e erros do lote
+        resultadosLote.forEach(sucesso => {
+          if (sucesso) atualizados++;
+          else erros++;
+        });
+
+        // Atualiza a tabela na tela com os novos resultados deste lote
+        renderizarTabela();
+
+        // Aguarda a pausa programada caso ainda restem lotes a processar
+        if (i + tamanhoLote < acoes.length) {
+          await delay(tempoDelay);
         }
-      } catch (err) {
-        alert("Não foi possível atualizar as cotações via internet. Você pode editar o valor manualmente clicando no ícone de engrenagem da ação.");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = textoOriginal;
       }
+
+      btn.disabled = false;
+      btn.innerHTML = textoOriginal;
+
+      alert(`Processamento em lote concluído!\n\n🟢 Atualizadas com sucesso: ${atualizados}\n🔴 Falhas/Mantidos: ${erros}\n\nPasse o mouse sobre os ícones de sinal ao lado dos tickers para ver os detalhes.`);
     }
 
     function toggleOrigem() {
@@ -709,7 +786,7 @@
         return;
       }
 
-      const dadosAcao = { ticker, setor, cotacao, fcfe, beta, crescimento };
+      const dadosAcao = { ticker, setor, cotacao, fcfe, beta, crescimento, statusApi: null, ultimaAtualizacao: null };
 
       if (ativoEmEdicao !== null) {
         acoes[ativoEmEdicao] = dadosAcao;
