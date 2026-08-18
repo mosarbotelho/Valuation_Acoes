@@ -1,347 +1,855 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inteligência Artificial Generativa na Cartografia para a Construção de Mapas Temáticos com Dados Públicos do Brasil</title>
-    <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-            color: #212529;
-            line-height: 1.8;
-            font-size: 16px;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            padding: 40px 60px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Barra de Botões de Exportação */
-        .export-bar {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 15px;
-        }
-        .btn-export {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        .btn-export:active {
-            transform: scale(0.98);
-        }
-        .btn-pdf {
-            background-color: #c0392b;
-            color: #ffffff;
-        }
-        .btn-pdf:hover {
-            background-color: #a93226;
-        }
-        .btn-docx {
-            background-color: #1f4e79;
-            color: #ffffff;
-        }
-        .btn-docx:hover {
-            background-color: #163a5c;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valuation de Ações por Setor</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- MathJax (LaTeX Rendering) -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
 
-        .title-block {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        .title-block h1 {
-            font-size: 2.2em;
-            color: #1a5276;
-            margin: 0;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #1a5276;
-            line-height: 1.3;
-        }
-        .title-block p {
-            font-size: 1.1em;
-            color: #444;
-            margin: 8px 0 0 0;
-            text-align: center;
-        }
-        h2 {
-            font-size: 1.8em;
-            color: #21618c;
-            margin-top: 40px;
-            border-bottom: 2px solid #21618c;
-            padding-bottom: 5px;
-        }
-        h3 {
-            font-size: 1.4em;
-            color: #2e86c1;
-            margin-top: 25px;
-        }
-        p {
-            text-align: justify;
-            margin-bottom: 20px;
-        }
-        ul, ol {
-            margin-bottom: 20px;
-            padding-left: 20px;
-        }
-        figure {
-            margin: 30px 0;
-            text-align: center;
-        }
-        figure img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .figure-caption {
-            font-style: italic;
-            font-size: 0.9em;
-            margin-top: 10px;
-            color: #666;
-        }
-
-        /* Oculta os botões de exportação ao imprimir/gerar PDF pelo navegador */
-        @media print {
-            body {
-                background-color: #ffffff;
-                padding: 0;
-            }
-            .container {
-                box-shadow: none;
-                padding: 0;
-                max-width: 100%;
-            }
-            .export-bar {
-                display: none !important;
-            }
-        }
-    </style>
+  <style>
+    /* Tooltip Customizado (Mensagem Oculta) */
+    .has-tooltip { position: relative; }
+    .tooltip-content {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      z-index: 50;
+    }
+    .has-tooltip:hover .tooltip-content {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Cabeçalho -->
+    <header class="border-b border-slate-700 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">📈 Valuation de Ações (FCD + Risco Setorial)</h1>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">
+          Precificação de valor teto considerando o Beta do segmento e risco de mercado
+        </p>
+      </div>
 
-<div class="container">
-
-    <!-- Botões de Exportação -->
-    <div class="export-bar">
-        <button class="btn-export btn-pdf" onclick="exportToPDF()">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 1.5 13 5h-3.5V1.5zM4.5 9a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
-            </svg>
-            Exportar para PDF
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="restaurarCarteiraPadrao()" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-rotate-left"></i> Resetar p/ Padrão
         </button>
-        <button class="btn-export btn-docx" onclick="exportToDOCX()">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M5.485 6.879l1.037 4.296h1.002l1.042-4.296 1.052 4.296h.985l1.037-4.296h-1.003l-.634 2.871-1.011-2.871h-.896l-1.026 2.871-.62-2.871H5.485z"/>
-                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 1.5 13 5h-3.5V1.5zM3 2a1 1 0 0 1 1-1h5v4a1 1 0 0 0 1 1h4v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2z"/>
-            </svg>
-            Exportar para .DOCX
+        <button onclick="abrirModalSalvar()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar Carteira
         </button>
+        <button onclick="document.getElementById('inputCarregarFile').click()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-emerald-300 font-semibold py-2 px-3 rounded-lg text-xs transition duration-200 flex items-center gap-1.5">
+          <i class="fa-solid fa-folder-open"></i> Carregar Arquivo
+        </button>
+        <input type="file" id="inputCarregarFile" accept=".json" class="hidden" onchange="carregarArquivoCarteira(event)">
+      </div>
+    </header>
+
+    <!-- 1. ORIGEM HISTÓRICA E TEÓRICA DOS MÉTODOS -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleOrigem()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-book-bookmark text-amber-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Origem Histórica e Metodológica (CAPM + FCD)</span>
+        </div>
+        <span id="iconeOrigem" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Origem</span>
+        </span>
+      </button>
+
+      <div id="conteudoOrigem" class="p-5 space-y-4 hidden text-xs leading-relaxed text-slate-300">
+        <p class="text-slate-300">
+          A precificação realizada neste aplicativo une duas das maiores inovações das finanças corporativas modernas:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-sm border-b border-slate-700 pb-2">
+              <i class="fa-solid fa-award"></i> Modelo CAPM & Coeficiente Beta
+            </div>
+            <p>
+              Proposto por <strong>William F. Sharpe</strong> (1964), baseado na Teoria Moderna de Portfólio de <strong>Harry Markowitz</strong> (1952). O modelo quantificou pela primeira vez o risco sistemático de ativos.
+            </p>
+            <p class="text-slate-400 text-[11px] italic">
+              🏆 Sharpe e Markowitz receberam o <strong>Prêmio Nobel de Economia em 1990</strong> por essas contribuições.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700 space-y-2">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm border-b border-slate-700 pb-2">
+              <i class="fa-solid fa-landmark"></i> Fluxo de Caixa Descontado (FCD)
+            </div>
+            <p>
+              Formalizado para valuation corporativo por <strong>Irving Fisher</strong> (1930) e <strong>John Burr Williams</strong> (1938).
+            </p>
+            <p class="text-slate-400 text-[11px] italic">
+              💡 Define que o valor intrínseco de qualquer ativo equivale ao somatório de todos os seus fluxos de caixa futuros trazidos a valor presente.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-700/80">
+          <strong class="text-cyan-400 block mb-1">🔗 Como os dois métodos se integram no aplicativo?</strong>
+          <p class="text-slate-300 text-[11px]">
+            O <strong>CAPM</strong> fornece a taxa de exigência justa de retorno (<span class="text-amber-300 font-bold">K<sub>e</sub></span>) calibrada pelo risco do setor (<span class="text-amber-300 font-bold">&beta;</span>). Essa taxa é então usada como taxa de desconto no modelo de <strong>Fluxo de Caixa Descontado</strong> para determinar o <strong>Preço Teto</strong> da ação.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. GUIA DIDÁTICO DE RISCO POR SETOR E SUBSETOR -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleDidatico()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-emerald-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Guia Didático Mapeado: Classificação de Betas (&beta;) por Subclasses e Segmentos</span>
+        </div>
+        <span id="iconeDidatico" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Guia</span>
+        </span>
+      </button>
+
+      <div id="conteudoDidatico" class="p-5 space-y-4 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          
+          <div class="bg-emerald-950/30 p-3.5 rounded-lg border border-emerald-800/50 space-y-2">
+            <div class="font-bold text-emerald-400 flex items-center gap-1.5 border-b border-emerald-800/60 pb-1.5">
+              🟢 Ultradefensivo (&beta; &lt; 0,70)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Transmissão Elétrica (&beta; 0,40), Saneamento (&beta; 0,55), Bebidas/Alimentos Básico (&beta; 0,60), Farmácias/Saúde (&beta; 0,65).</strong><br>
+              Demanda essencial, blindados contra inflação e juros altos.
+            </p>
+          </div>
+
+          <div class="bg-blue-950/30 p-3.5 rounded-lg border border-blue-800/50 space-y-2">
+            <div class="font-bold text-blue-400 flex items-center gap-1.5 border-b border-blue-800/60 pb-1.5">
+              🔵 Defensivo a Neutro (&beta; 0,70 - 0,95)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Geração/Distribuição (&beta; 0,70), Telecom (&beta; 0,75), Seguros (&beta; 0,80), Bancos Tradicionais (&beta; 0,85), Holdings (&beta; 0,90).</strong><br>
+              Acompanham a economia com resiliência e bom retorno em proventos.
+            </p>
+          </div>
+
+          <div class="bg-amber-950/30 p-3.5 rounded-lg border border-amber-800/50 space-y-2">
+            <div class="font-bold text-amber-400 flex items-center gap-1.5 border-b border-amber-800/60 pb-1.5">
+              🟡 Cíclico e Commodities (&beta; 1,00 - 1,25)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Petróleo Majors (&beta; 1,05), Celulose (&beta; 1,05), Mineração (&beta; 1,15), Autopeças/Logística (&beta; 1,15), Agronegócio (&beta; 1,20).</strong><br>
+              Atrelados ao câmbio, commodities e atividade industrial global.
+            </p>
+          </div>
+
+          <div class="bg-rose-950/30 p-3.5 rounded-lg border border-rose-800/50 space-y-2">
+            <div class="font-bold text-rose-400 flex items-center gap-1.5 border-b border-rose-800/60 pb-1.5">
+              🔴 Crescimento e Volátil (&beta; &ge; 1,30)
+            </div>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              <strong>Incorporação/Construção (&beta; 1,30), Varejo Discricionário (&beta; 1,40), Fintechs/Meios de Pagamento (&beta; 1,40), E-Commerce (&beta; 1,55), Aéreas (&beta; 1,70).</strong><br>
+              Sensíveis a juros, crédito ao consumo e inovação tecnológica.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. EXPLICAÇÃO METODOLÓGICA E FÓRMULAS -->
+    <section class="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+      <button onclick="toggleCalculo()" class="w-full p-4 bg-slate-800 hover:bg-slate-750 flex justify-between items-center text-left transition border-b border-slate-700/60">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-cyan-400 text-lg"></i>
+          <span class="font-bold text-slate-200 text-sm md:text-base">Entenda os Cálculos e Variáveis do Valuation</span>
+        </div>
+        <span id="iconeCalculo" class="text-slate-400 text-xs flex items-center gap-1">
+          <i class="fa-solid fa-chevron-down"></i> <span>Expandir Metodologia</span>
+        </span>
+      </button>
+
+      <div id="conteudoCalculo" class="p-5 space-y-6 hidden text-xs leading-relaxed">
+        
+        <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
+          <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-chart-line"></i> 1. Taxa de Retorno Exigida (K<sub>e</sub>) - Modelo CAPM
+          </h3>
+          <p class="text-slate-300">
+            A Taxa de Desconto (K<sub>e</sub>) representa o retorno mínimo que o investidor exige para comprar a ação, compensando o risco livre e a volatilidade do setor.
+          </p>
+          <div class="bg-slate-950 p-3 rounded text-center text-amber-300 font-mono text-sm overflow-x-auto border border-amber-900/40">
+            \[ K_e = R_f + (\beta \times \text{ERP}) \]
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-emerald-400">R<sub>f</sub> (Risk-Free Rate):</strong> Taxa Livre de Risco (Ex: NTN-B / Tesouro IPCA+). É o rendimento base sem risco de calote.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-amber-400">&beta; (Beta Setorial):</strong> Mede a sensibilidade do setor em relação ao mercado. &beta; &lt; 1 indica menor risco; &beta; &gt; 1 indica maior risco.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-cyan-400">ERP (Equity Risk Premium):</strong> Prêmio pelo Risco de Ações. É o retorno adicional exigido para investir na renda variável em vez da renda fixa.
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/80 space-y-3">
+          <h3 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-coins"></i> 2. Preço Teto por Fluxo de Caixa Descontado (FCD / DFC)
+          </h3>
+          <p class="text-slate-300">
+            O Valor Justo (Preço Teto) é calculated somando o Valor Presente dos fluxos de caixa projetados para os próximos 5 anos mais o Valor Presente da Perpetuidade.
+          </p>
+          <div class="bg-slate-950 p-3 rounded text-center text-emerald-300 font-mono text-sm overflow-x-auto border border-emerald-900/40">
+            \[ \text{Preço Teto} = \sum_{t=1}^{5} \frac{\text{FCFE}_0 \times (1 + g)^t}{(1 + K_e)^t} + \frac{\text{Perpetuidade}}{(1 + K_e)^5} \]
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded text-center text-cyan-300 font-mono text-xs overflow-x-auto border border-cyan-900/40">
+            \[ \text{Perpetuidade} = \frac{\text{FCFE}_5 \times (1 + g_p)}{K_e - g_p} \]
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2">
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-emerald-400">FCFE<sub>0</sub>:</strong> Fluxo de Caixa Livre para o Acionista por Ação atual (caixa líquido gerado).
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-cyan-400">g (Crescimento 5a):</strong> Taxa esperada de crescimento dos lucros/caixa para os próximos 5 anos.
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-amber-400">g<sub>p</sub> (Crescimento Perpétuo):</strong> Taxa de crescimento do caixa no longo prazo (geralmente próxima à inflação/PIB).
+            </div>
+            <div class="bg-slate-800/60 p-2.5 rounded border border-slate-700">
+              <strong class="text-purple-400">Margem de Segurança:</strong> Percentual de desconto entre a cotação atual e o Preço Teto calculado.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Parâmetros Macro do Mercado -->
+    <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-gears text-emerald-400 mr-2"></i> Parâmetros Macro do Mercado</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Taxa Livre de Risco - NTN-B (R<sub>f</sub> %)</label>
+          <input type="number" id="taxaLivreRisco" value="6.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold text-sm focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Prêmio de Risco do Mercado (ERP %)</label>
+          <input type="number" id="premioAcoes" value="5.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold text-sm focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-1">Crescimento Perpétuo (g<sub>p</sub> %)</label>
+          <input type="number" id="crescimentoPerpetuo" value="2.50" step="0.25" oninput="salvarEstadoLocal(); renderizarTabela();" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-cyan-400 font-bold text-sm focus:outline-none focus:border-cyan-500">
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabela de Ações -->
+    <section class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
+      <div class="p-4 bg-slate-900/40 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-200">Ações em Acompanhamento</h2>
+          <span id="totalAcoes" class="text-xs text-slate-400">0 Ações Cadastradas</span>
+        </div>
+        
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="btnAtualizarCotacoes" onclick="buscarCotacoesYahoo()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2 shadow">
+            <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar Cotações (Yahoo Finance)</span>
+          </button>
+          
+          <button onclick="abrirModalNovaAcao()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Adicionar Ação
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900/80 text-slate-400 text-xs uppercase border-b border-slate-700">
+              <th class="p-4">Empresa / Setor</th>
+              <th class="p-4">Cotação Atual</th>
+              <th class="p-4">Caixa Livre (FCFE)</th>
+              <th class="p-4">Crescimento (5a)</th>
+              <th class="p-4">Beta & Exigência (Ke)</th>
+              <th class="p-4">Preço Teto FCD</th>
+              <th class="p-4">Margem</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAcoes" class="divide-y divide-slate-700/50 text-sm">
+            <!-- Renderizado via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL EDITAR / ADICIONAR -->
+  <div id="modalAjuste" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+        <h3 id="modalTitulo" class="text-xl font-bold text-emerald-400">Ajustar Ação</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Ticker</label>
+            <input type="text" id="modalTicker" placeholder="EX: WEGE3" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold uppercase focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Setor / Subclasse de Beta</label>
+            <select id="modalSetor" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
+              
+              <optgroup label="🟢 ULTRADEFENSIVOS (Beta < 0.70)">
+                <option value="Energia (Transmissão)">Transmissão Elétrica (Beta 0.40)</option>
+                <option value="Saneamento e Água">Saneamento e Água (Beta 0.55)</option>
+                <option value="Bens de Consumo Básico">Bens de Consumo Básico / Bebidas (Beta 0.60)</option>
+                <option value="Saúde Básica e Farmácias">Saúde Básica / Farmácias (Beta 0.65)</option>
+              </optgroup>
+
+              <optgroup label="🔵 DEFENSIVOS A NEUTROS (Beta 0.70 - 0.95)">
+                <option value="Energia (Geração/Distribuição)">Geração / Distribuição Elétrica (Beta 0.70)</option>
+                <option value="Gestão de Resíduos">Gestão de Resíduos e Serviços (Beta 0.75)</option>
+                <option value="Telecomunicações (Rede)">Telecomunicações / Infra (Beta 0.75)</option>
+                <option value="Seguros e Previdência">Seguros e Previdência (Beta 0.80)</option>
+                <option value="Serviços Financeiros / Bancos">Bancos Comerciais Tradicionais (Beta 0.85)</option>
+                <option value="Holdings Financeiras">Holdings Financeiras (Beta 0.90)</option>
+                <option value="REITs / FIIs de Tijolo">REITs / Imóveis de Renda (Beta 0.85)</option>
+              </optgroup>
+
+              <optgroup label="🟡 CÍCLICOS E COMMODITIES (Beta 1.00 - 1.25)">
+                <option value="Distribuição de Combustíveis">Distribuição de Combustíveis (Beta 1.00)</option>
+                <option value="Petróleo, Gás e Refino">Petróleo & Gás (Majors Integradas) (Beta 1.05)</option>
+                <option value="Papel e Celulose">Papel e Celulose (Beta 1.05)</option>
+                <option value="Logística e Concessões">Rodovias, Portos e Ferrovias (Beta 1.00)</option>
+                <option value="Mineração e Siderurgia">Mineração e Siderurgia (Beta 1.15)</option>
+                <option value="Bens de Capital e Autopeças">Bens de Capital, Motores e Peças (Beta 1.15)</option>
+                <option value="Agronegócio / Grãos">Agronegócio e Produção agrícola (Beta 1.20)</option>
+              </optgroup>
+
+              <optgroup label="🔴 ALTA VOLATILIDADE E CRESCIMENTO (Beta >= 1.30)">
+                <option value="Incorporação / Construção">Incorporação e Construção Civil (Beta 1.30)</option>
+                <option value="Tecnologia (SaaS / Software)">Software Corporativo / SaaS (Beta 1.25)</option>
+                <option value="Varejo Discricionário">Varejo Discricionário / Moda (Beta 1.40)</option>
+                <option value="Fintechs e Pagamentos">Fintechs e Meios de Pagamento (Beta 1.40)</option>
+                <option value="E-Commerce e Plataformas">E-Commerce e Marketplace (Beta 1.55)</option>
+                <option value="Turismo e Companhias Aéreas">Companhias Aéreas e Viagens (Beta 1.70)</option>
+              </optgroup>
+
+              <optgroup label="🚀 TESES FUTURAS / EMERGENTES">
+                <option value="Infraestrutura de IA / Datacenters">Infraestrutura de IA / Datacenters (Beta 1.10)</option>
+                <option value="Energia Renovável e Transição">Energia Renovável e Transição (Beta 1.30)</option>
+                <option value="Mobilidade Elétrica e Baterias">Mobilidade Elétrica & Baterias (Beta 1.50)</option>
+              </optgroup>
+
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Cotação Atual (R$)</label>
+            <input type="number" id="modalCotacao" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Caixa Livre / Ação (R$)</label>
+            <input type="number" id="modalFcfe" step="0.01" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-emerald-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Beta do Setor (&beta;)</label>
+            <input type="number" id="modalBeta" step="0.05" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-amber-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Crescimento 5a - g (%)</label>
+            <input type="number" id="modalCrescimento" step="0.5" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-cyan-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 flex gap-3">
+        <button onclick="salvarAjusteIndividual()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+          Salvar
+        </button>
+        <button onclick="fecharModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded-lg transition duration-200">
+          Cancelar
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- Bloco de Título e Autoria -->
-    <div class="title-block">
-        <h1>Inteligência Artificial Generativa na Cartografia para a Construção de Mapas Temáticos com Dados Públicos do Brasil</h1>
-        <p><strong>Proponente:</strong> Mosar Faria Botelho</p>
-        <p><strong>Orientador:</strong> Prof. Dr. André Luiz Lopes de Faria</p>
+  <!-- MODAL SALVAR -->
+  <div id="modalSalvar" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h3 class="text-lg font-bold text-emerald-400">Salvar Carteira em Arquivo</h3>
+        <button onclick="fecharModalSalvar()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Arquivo</label>
+        <div class="flex items-center gap-1">
+          <input type="text" id="nomeArquivoSalvar" value="carteira-acoes" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-semibold focus:outline-none focus:border-emerald-500">
+          <span class="text-slate-400 text-xs font-mono">.json</span>
+        </div>
+      </div>
+      <button onclick="executarDownloadArquivo()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-download"></i> Baixar Arquivo
+      </button>
     </div>
+  </div>
 
-    <section>
-        <h2>Resumo</h2>
-        <p>Esta dissertação apresenta o desenvolvimento e a aplicação de uma metodologia inovadora que integra Inteligência Artificial (IA) a grandes volumes de dados públicos brasileiros para a cartografia geopolítica. O projeto buscou transcender a mera visualização de dados estáticos, utilizando modelos de aprendizado de máquina para extrair padrões, tendências e conhecimento geopolítico implícito. O resultado prático foi a criação de um protótipo funcional em ambiente web, que demonstrou a viabilidade da metodologia ao gerar mapas temáticos dinâmicos e interativos, com análises de cluster para diversas variáveis socioeconômicas e de saúde. Os resultados validam a abordagem proposta, reforçando o potencial da IA como uma ferramenta estratégica para a análise espacial e a tomada de decisões em políticas públicas no Brasil.</p>
-    </section>
+  <script>
+    const carteiraInicial = [
+      { ticker: 'BBDC4', setor: 'Serviços Financeiros / Bancos', cotacao: 18.99, fcfe: 2.19, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BBSE3', setor: 'Seguros e Previdência', cotacao: 42.57, fcfe: 4.73, beta: 0.80, crescimento: 6.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'ISAE4', setor: 'Energia (Transmissão)', cotacao: 28.53, fcfe: 3.55, beta: 0.40, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CXSE3', setor: 'Seguros e Previdência', cotacao: 22.43, fcfe: 1.46, beta: 0.80, crescimento: 6.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BRAV3', setor: 'Petróleo, Gás e Refino', cotacao: 20.38, fcfe: 0.50, beta: 1.05, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'BBAS3', setor: 'Serviços Financeiros / Bancos', cotacao: 21.07, fcfe: 2.20, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SANB11', setor: 'Serviços Financeiros / Bancos', cotacao: 26.94, fcfe: 3.43, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'KLBN3', setor: 'Papel e Celulose', cotacao: 3.59, fcfe: 0.28, beta: 1.05, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SANB3', setor: 'Serviços Financeiros / Bancos', cotacao: 13.27, fcfe: 1.71, beta: 0.85, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'TAEE11', setor: 'Energia (Transmissão)', cotacao: 41.65, fcfe: 4.55, beta: 0.40, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'KLBN11', setor: 'Papel e Celulose', cotacao: 17.92, fcfe: 1.40, beta: 1.05, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'ITSA4', setor: 'Holdings Financeiras', cotacao: 13.81, fcfe: 1.51, beta: 0.90, crescimento: 5.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'VBBR3', setor: 'Distribuição de Combustíveis', cotacao: 34.90, fcfe: 2.50, beta: 1.00, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SLCE3', setor: 'Agronegócio / Grãos', cotacao: 13.98, fcfe: 0.65, beta: 1.20, crescimento: 5.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'IRBR3', setor: 'Seguros e Previdência', cotacao: 56.40, fcfe: 4.28, beta: 0.80, crescimento: 6.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SAPR4', setor: 'Saneamento e Água', cotacao: 7.16, fcfe: 0.81, beta: 0.55, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'SAPR11', setor: 'Saneamento e Água', cotacao: 36.88, fcfe: 4.05, beta: 0.55, crescimento: 4.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CMIG4', setor: 'Energia (Geração/Distribuição)', cotacao: 11.23, fcfe: 1.69, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'CSAN3', setor: 'Holdings Financeiras', cotacao: 3.91, fcfe: -2.40, beta: 0.90, crescimento: 2.0, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'AXIA3', setor: 'Energia (Geração/Distribuição)', cotacao: 51.75, fcfe: 3.24, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null },
+      { ticker: 'AXIA7', setor: 'Energia (Geração/Distribuição)', cotacao: 50.72, fcfe: 3.24, beta: 0.70, crescimento: 4.5, statusApi: null, ultimaAtualizacao: null }
+    ];
 
-    <section>
-        <h2>1. Introdução e Justificativa</h2>
-        <p>A cartografia sempre foi uma ferramenta fundamental para a representação do território. Contudo, o crescente volume e a complexidade dos dados geoespaciais e socioeconômicos, provenientes de fontes como o Instituto Brasileiro de Geografia e Estatística (IBGE), superam a capacidade das metodologias tradicionais de mapeamento. A simples plotagem de dados estáticos não é suficiente para revelar as relações dinâmicas, os padrões ocultos e as tendências complexas que moldam a realidade geopolítica de um país tão vasto e diversificado como o Brasil. Diante desse cenário, a Inteligência Artificial (IA) emerge como uma solução promissora para transformar dados brutos em conhecimento estratégico. Modelos de IA, como algoritmos de aprendizado de máquina, podem processar, analisar e sintetizar grandes conjuntos de dados geoespaciais com uma eficiência inalcançável por métodos convencionais. Eles são capazes de identificar correlações não lineares entre variáveis demográficas, econômicas e de infraestrutura, permitindo a criação de mapas que não apenas visualizam informações, mas que também contam a história das interações geopolíticas no espaço.</p>
-    </section>
+    let acoes = [];
+    let ativoEmEdicao = null;
 
-    <section>
-        <h2>2. Revisão Bibliográfica</h2>
-        <p>A pesquisa se situa na intersecção de três campos de conhecimento: a Geoinformática, a Ciência de Dados e a Inteligência Artificial. A Geoinformática, ou Ciência da Informação Geográfica (GIScience), tem suas bases conceituais estabelecidas por autores como Goodchild (1992), que defendem o estudo dos fenômenos geográficos através da tecnologia da informação. Longley et al. (2005) aprofundam essa visão, posicionando os Sistemas de Informação Geográfica (SIG) como ferramentas essenciais para a análise espacial.</p>
-        <p>Paralelamente, a Ciência de Dados e a IA, conforme Russell e Norvig (2010), oferecem um arcabouço metodológico para extrair insights valiosos de grandes volumes de dados. A aplicação dessas técnicas ao contexto geoespacial, conhecida como Geointeligência, permite a identificação de padrões e tendências que não seriam evidentes a partir de uma análise visual simples. O uso de algoritmos de aprendizado de máquina, como a clusterização, torna possível a agregação de unidades geográficas com base em múltiplas variáveis, revelando correlações não lineares entre fenômenos demográficos, econômicos e de saúde.</p>
-        <p>A literatura sobre o uso de IA em dados públicos (Silva, 2021) e em estudos demográficos (Oliveira & Souza, 2019) reforça a relevância desta abordagem para a formulação de políticas públicas. Este trabalho se alinha a essa corrente, buscando preencher uma lacuna metodológica ao demonstrar a aplicação prática da IA para a construção de mapas temáticos dinâmicos, que funcionam como ferramentas estratégicas para o planejamento e a gestão territorial.</p>
-        <p>A interseção entre a cartografia temática e a IA tem sido objeto de crescente interesse. Ferramentas interativas, como o protótipo desenvolvido, permitem que o usuário não apenas visualize dados, mas também interaja com eles em tempo real, explorando diferentes camadas e análises. Essa abordagem vai além da estaticidade dos mapas tradicionais, promovendo uma compreensão mais profunda da complexidade espacial e suas interações com fatores sociais, econômicos e ambientais. A utilização de bibliotecas de código aberto, como o Leaflet, democratiza o acesso a essas tecnologias, permitindo que a pesquisa acadêmica seja replicável e facilmente compartilhável.</p>
-        <p>Em suma, a revisão bibliográfica aponta para a necessidade de novas abordagens metodológicas na cartografia para lidar com a avalanche de dados disponíveis. A IA, com sua capacidade de processar, analisar e extrair conhecimento de conjuntos de dados complexos, emerge como uma resposta promissora. Este projeto, ao combinar essas áreas, contribui para o avanço do conhecimento na Geoinformática e oferece uma ferramenta prática e inovadora para o estudo da geopolítica do Brasil.</p>
-    </section>
+    function salvarEstadoLocal() {
+      const estado = {
+        parametrosMacro: {
+          taxaLivreRisco: parseFloat(document.getElementById('taxaLivreRisco').value) || 0,
+          premioAcoes: parseFloat(document.getElementById('premioAcoes').value) || 0,
+          crescimentoPerpetuo: parseFloat(document.getElementById('crescimentoPerpetuo').value) || 0
+        },
+        acoes: acoes
+      };
+      localStorage.setItem('carteiraValuationState', JSON.stringify(estado));
+    }
 
-    <section>
-        <h2>3. Metodologia Detalhada</h2>
-        <p>A metodologia adotada para o desenvolvimento do projeto seguiu uma abordagem em três fases principais, que culminaram na criação do protótipo funcional.</p>
+    function carregarEstadoLocal() {
+      const salvo = localStorage.getItem('carteiraValuationState');
+      if (salvo) {
+        try {
+          const estado = JSON.parse(salvo);
+          if (estado.parametrosMacro) {
+            document.getElementById('taxaLivreRisco').value = estado.parametrosMacro.taxaLivreRisco ?? 6.50;
+            document.getElementById('premioAcoes').value = estado.parametrosMacro.premioAcoes ?? 5.50;
+            document.getElementById('crescimentoPerpetuo').value = estado.parametrosMacro.crescimentoPerpetuo ?? 2.50;
+          }
+          if (Array.isArray(estado.acoes) && estado.acoes.length > 0) {
+            acoes = estado.acoes;
+            return;
+          }
+        } catch(e) {
+          console.warn("Falha ao restaurar dados salvos.");
+        }
+      }
+      acoes = JSON.parse(JSON.stringify(carteiraInicial));
+    }
 
-        <h3>3.1. Coleta e Estrutura de Dados</h3>
-        <p>A fase inicial consistiu na coleta de dados geoespaciais e tabulares de fontes públicas do governo brasileiro, com foco em dados do IBGE, bem como em indicadores de saúde fornecidos por Secretarias de Saúde. Os dados foram extraídos e processados para serem compatíveis com um formato de mapeamento digital. A principal fonte de dados geoespaciais utilizada foi um arquivo no formato <strong>TopoJSON</strong>, que representa a geometria dos estados brasileiros de forma otimizada para uso em ambientes web. Os dados tabulares foram estruturados em objetos <strong>JSON</strong>, onde cada estado era associado a um conjunto de variáveis, como renda, população, e a incidência de diversas doenças.</p>
+    function restaurarCarteiraPadrao() {
+      if (confirm("Deseja restaurar as ações padrão com a calibração de Betas?")) {
+        acoes = JSON.parse(JSON.stringify(carteiraInicial));
+        renderizarTabela();
+      }
+    }
 
-        <h3>3.2. Desenvolvimento e Aplicação de Modelos de IA</h3>
-        <p>O desenvolvimento da Inteligência Artificial foi focado na aplicação de técnicas de <strong>clusterização</strong> (ou agrupamento). O método de clusterização foi aplicado para agrupar unidades geográficas (estados) com características similares em relação a variáveis selecionadas. Para a implementação, a linguagem <strong>JavaScript</strong> foi a principal ferramenta. Os algoritmos de cluster foram desenvolvidos para identificar padrões e correlações não lineares entre diferentes variáveis, como renda e a incidência de HIV, ou população e o número de casos de dengue. Esses clusters foram calculados previamente e os resultados foram armazenados em um arquivo de dados estáticos para serem consumidos pela interface do protótipo.</p>
+    function calcularKe(beta) {
+      const rf = parseFloat(document.getElementById('taxaLivreRisco').value) || 6.50;
+      const premio = parseFloat(document.getElementById('premioAcoes').value) || 5.50;
+      return rf + (beta * premio);
+    }
 
-        <h3>3.3. Construção do Protótipo de Visualização</h3>
-        <p>A interface do protótipo foi desenvolvida inteiramente com a linguagem <strong>HTML</strong> para a estruturação da página, <strong>CSS</strong> para a estilização visual e, principalmente, <strong>JavaScript</strong> para a lógica interativa. O protótipo se baseou na biblioteca de código aberto <strong>Leaflet</strong>, uma das mais populares para a construção de mapas interativos em ambiente web. O Leaflet foi fundamental para a exibição dos dados geoespaciais (TopoJSON) e para a criação das camadas temáticas. O código JavaScript do protótipo é responsável por:</p>
-        <ul>
-            <li>Carregar o mapa base e a geometria dos estados.</li>
-            <li>Ler os dados de cluster e os dados temáticos de cada estado.</li>
-            <li>Aplicar uma função de estilo para colorir cada estado de acordo com a variável selecionada.</li>
-            <li>Gerenciar as interações do usuário, como a seleção de diferentes mapas e a exibição de informações detalhadas (pop-ups) ao clicar em um estado.</li>
-        </ul>
-        <p>A arquitetura adotada permite que o protótipo seja leve e rápido, processando os dados de forma eficiente no navegador do usuário, sem a necessidade de um servidor robusto para a renderização do mapa. A construção dos mapas seguiu um fluxo bem definido. A partir dos dados tabulares e da geometria dos estados, cada mapa foi criado dinamicamente, com uma função JavaScript que atribui uma cor a cada estado com base no valor de sua variável (ou cluster) correspondente. A legenda do mapa foi gerada programaticamente, ajustando-se automaticamente ao tema selecionado.</p>
+    function calcularFCD(fcfe, crescimentoPct, beta) {
+      if (fcfe <= 0) return 0;
 
-        <h3>3.4. Desafios Encontrados</h3>
-        <p>O desenvolvimento do protótipo apresentou desafios significativos, principalmente na fase de adaptação e integração da IA e das bibliotecas de visualização. A primeira dificuldade foi fazer com que a IA compreendesse o "desejado" do ponto de vista do projeto. A seleção dos algoritmos de cluster, por exemplo, exigiu testes para encontrar o método que melhor refletisse os padrões socioeconômicos e de saúde do Brasil. A adaptação da linguagem para atingir o objetivo também foi um obstáculo, pois foi necessário programar as regras de clusterização em JavaScript, uma linguagem não tradicional para ciência de dados, o que demandou a criação de funções personalizadas. Por fim, a adaptação das bibliotecas, como o Leaflet, para trabalhar com dados complexos de cluster exigiu a compreensão profunda de sua estrutura e a implementação de scripts adicionais para garantir que os dados de IA fossem corretamente associados aos objetos geográficos.</p>
-    </section>
+      const g = crescimentoPct / 100;
+      const Ke = calcularKe(beta) / 100;
+      const gp = (parseFloat(document.getElementById('crescimentoPerpetuo').value) || 2.5) / 100;
 
-    <section>
-        <h2>4. Resultados e Discussão</h2>
-        <p>O protótipo ("PrototipoTeste.html") demonstra a validação prática da metodologia proposta, exibindo os resultados em um sistema interativo que permite a visualização de diversas camadas de dados por estado no Brasil. A seguir, detalhamos os resultados de cada mapa construído, destacando os insights obtidos.</p>
+      if (Ke <= gp) return 0;
 
-        <h3>Análise de Clusters e Indicadores Socioeconômicos</h3>
-        <p>A funcionalidade de "Análise de Clusters" foi o ponto central da validação da IA. Mapas como os que mostram a distribuição da população, renda média e clusters de população e renda ilustram a capacidade da IA em agrupar estados com base em indicadores socioeconômicos. A <strong>Figura 1</strong> mostra a distribuição da população no Brasil, destacando os estados mais densamente povoados. Já a <strong>Figura 2</strong>, que apresenta um cluster de população e renda, revela como os estados se agrupam em perfis socioeconômicos semelhantes, apontando para padrões de desenvolvimento regional que não se alinham necessariamente às fronteiras geográficas tradicionais.</p>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_Populacao.png" alt="Mapa de População no Brasil.">
-            <figcaption class="figure-caption">Figura 1: Distribuição da População nos Estados do Brasil.</figcaption>
-        </figure>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_RendaMedia.png" alt="Mapa de Renda Média por Estado no Brasil.">
-            <figcaption class="figure-caption">Figura 2: Distribuição da Renda Média por Estado no Brasil.</figcaption>
-        </figure>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_SocioEconomico.png" alt="Mapa de Clusters Socioeconômicos.">
-            <figcaption class="figure-caption">Figura 3: Análise de Clusters Socioeconômicos por Estado no Brasil.</figcaption>
-        </figure>
+      let vpFase1 = 0;
+      let fluxoAtual = fcfe;
 
-        <h3>Análise de Saúde Pública e Correlações</h3>
-        <p>Os mapas de cluster de saúde foram particularmente reveladores. O mapa de arboviroses, exibido na <strong>Figura 4</strong>, agrupa estados com base na incidência de dengue, zika e chikungunya, destacando áreas de maior risco epidemiológico no país. Esta análise pode servir como uma ferramenta crucial para a alocação de recursos em campanhas de prevenção e controle. Mais notavelmente, as análises de correlação entre saúde e economia: o mapa <strong>"Renda x HIV"</strong>, mostrado na <strong>Figura 5</strong>, e o mapa <strong>"Renda x Tuberculose"</strong>, na <strong>Figura 6</strong>, revelaram correlações significativas. Eles mostram que estados com níveis de renda semelhantes tendem a ter padrões de incidência de HIV e Tuberculose também similares, sugerindo uma relação direta entre o status socioeconômico e a saúde da população. Essa análise de cluster se mostrou uma ferramenta poderosa para identificar e visualizar disparidades sociais de forma geográfica.</p>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_Arboviroses.png" alt="Mapa de Clusters de Arboviroses no Brasil.">
-            <figcaption class="figure-caption">Figura 4: Análise de Clusters de Arboviroses (Dengue, Zika, Chikungunya) por Estado.</figcaption>
-        </figure>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_RendaHIV.png" alt="Mapa de Clusters de Renda e HIV no Brasil.">
-            <figcaption class="figure-caption">Figura 5: Análise de Clusters para a Correlação entre Renda e Casos de HIV por Estado.</figcaption>
-        </figure>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_RendaTuberculose.png" alt="Mapa de Clusters de Renda e Tuberculose no Brasil.">
-            <figcaption class="figure-caption">Figura 6: Análise de Clusters para a Correlação entre Renda e Casos de Tuberculose por Estado.</figcaption>
-        </figure>
+      for (let ano = 1; ano <= 5; ano++) {
+        fluxoAtual = fluxoAtual * (1 + g);
+        vpFase1 += fluxoAtual / Math.pow(1 + Ke, ano);
+      }
 
-        <h3>Indicadores Diversos e Suas Análises</h3>
-        <p>O protótipo também apresentou mapas para diversos indicadores individuais, como o de casos totais de COVID-19, exibido na <strong>Figura 7</strong>. A visualização desses dados em um mapa dinâmico facilita a compreensão de sua distribuição espacial. A análise de <strong>"Investidores B3"</strong> e o mapa de <strong>IPCA</strong>, mostrado na <strong>Figura 8</strong>, demonstrou como a IA pode identificar padrões econômicos não óbvios, agrupando estados com base no volume de investidores ou na variação de preços. Esses mapas são úteis para estudos de mercado, planejamento financeiro regional e análise de políticas públicas. Os mapas de servidores públicos e professores por estado fornecem uma visão da estrutura e do investimento público em cada região.</p>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_Covid19.png" alt="Mapa de Casos de COVID-19 no Brasil.">
-            <figcaption class="figure-caption">Figura 7: Distribuição de Casos Totais de COVID-19 por Estado.</figcaption>
-        </figure>
-        <figure>
-            <img class="lazy-load-img" data-filename="Mapa_IPCA_Anual.png" alt="Mapa do IPCA Anual no Brasil.">
-            <figcaption class="figure-caption">Figura 8: Variação do IPCA (Índice de Preços ao Consumidor Amplo) por Estado.</figcaption>
-        </figure>
-    </section>
+      const fluxoAno6 = fluxoAtual * (1 + gp);
+      const valorPerpetuidade = fluxoAno6 / (Ke - gp);
+      const vpPerpetuidade = valorPerpetuidade / Math.pow(1 + Ke, 5);
 
-    <section>
-        <h2>5. Conclusão</h2>
-        <p>A dissertação conclui que o projeto demonstrou com sucesso a viabilidade de integrar Inteligência Artificial com dados públicos brasileiros para a cartografia geopolítica. O protótipo desenvolvido não apenas visualiza informações, mas as transforma em conhecimento acionável, revelando padrões e tendências que podem auxiliar na formulação de políticas públicas mais assertivas. A metodologia, com seus detalhes de implementação em JavaScript e bibliotecas de código aberto, preenche uma lacuna na literatura ao propor um modelo prático e aplicável para a análise espacial com IA. Os resultados reforçam o potencial da pesquisa na área e abrem caminho para trabalhos futuros, incluindo a ampliação do conjunto de dados, o desenvolvimento de modelos de IA mais sofisticados e a criação de novas funcionalidades de análise em tempo real.</p>
-    </section>
+      return vpFase1 + vpPerpetuidade;
+    }
 
-    <section>
-        <h2>Nota sobre a Autoria</h2>
-        <p>Este artigo de dissertação foi concebido com a colaboração de uma Inteligência Artificial generativa, atuando sob a supervisão de um especialista em Ciências Geodésicas. A IA foi responsável por estruturar o conteúdo, redigir os parágrafos e, de forma automatizada, identificar e inserir as figuras nos locais corretos. Essa abordagem demonstra o potencial das ferramentas de IA como um recurso complementar e eficiente para a produção acadêmica, garantindo a organização e a correta exemplificação do texto com dados visuais.</p>
-    </section>
+    function renderizarTabela() {
+      const tbody = document.getElementById('tabelaAcoes');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      document.getElementById('totalAcoes').innerText = `${acoes.length} Ações Cadastradas`;
 
-    <section>
-        <h2>Referências Bibliográficas</h2>
-        <ul>
-            <li>GOODCHILD, M. F. Geographical information science. <strong>International Journal of Geographical Information Systems</strong>, v. 6, n. 1, p. 31-45, 1992.</li>
-            <li>LONGLEY, P. A. et al. <strong>Geographic Information Systems and Science</strong>. 2. ed. Nova Jersey: Wiley, 2005.</li>
-            <li>OLIVEIRA, J. P.; SOUZA, F. R. <strong>Censo demográfico e análise espacial urbana</strong>. São Paulo: Editora Atlas, 2019.</li>
-            <li>RUSSELL, S.; NORVIG, P. <strong>Artificial Intelligence: A Modern Approach</strong>. 3. ed. Nova Jersey: Pearson Education, 2010.</li>
-        </ul>
-    </section>
+      acoes.forEach((acao, index) => {
+        const keCalculado = calcularKe(acao.beta);
+        const precoTeto = calcularFCD(acao.fcfe, acao.crescimento, acao.beta);
+        const margem = precoTeto > 0 ? ((precoTeto - acao.cotacao) / acao.cotacao) * 100 : 0;
+        
+        const isDesconto = precoTeto > 0 && acao.cotacao <= precoTeto;
+        const statusClass = isDesconto ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        const statusTexto = isDesconto ? 'Comprar' : (precoTeto === 0 ? 'Revisar / FCFE < 0' : 'Aguardar');
 
-</div>
+        let sinalVisual = '';
+        if (acao.statusApi === 'sucesso') {
+          sinalVisual = `
+            <div class="has-tooltip inline-flex items-center ml-1.5 cursor-help">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+              <div class="tooltip-content bg-slate-950 text-emerald-300 text-[11px] font-mono py-1 px-2.5 rounded shadow-xl border border-emerald-800/80">
+                🔒 Valor atualizado via Yahoo Finance às ${acao.ultimaAtualizacao || 'recém-atualizado'}
+              </div>
+            </div>`;
+        } else if (acao.statusApi === 'erro') {
+          sinalVisual = `
+            <div class="has-tooltip inline-flex items-center ml-1.5 cursor-help">
+              <i class="fa-solid fa-circle-exclamation text-rose-400 text-xs"></i>
+              <div class="tooltip-content bg-slate-950 text-rose-300 text-[11px] font-mono py-1 px-2.5 rounded shadow-xl border border-rose-800/80">
+                ⚠️ Erro ao atualizar este ticker. Mantido valor armazenado.
+              </div>
+            </div>`;
+        }
 
-<script>
-// Carregamento Preguiçoso de Imagens
-document.addEventListener('DOMContentLoaded', () => {
-    const images = document.querySelectorAll('.lazy-load-img');
-    const folder = 'imagens/';
-    
-    images.forEach(img => {
-        const filename = img.getAttribute('data-filename');
-        const imgPathInFolder = folder + filename;
-        const imgPathInRoot = filename;
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-700/40 transition">
+            <td class="p-4">
+              <div class="font-extrabold text-emerald-400 text-base flex items-center">
+                ${acao.ticker}
+                ${sinalVisual}
+              </div>
+              <div class="text-xs text-slate-300 font-medium">${acao.setor}</div>
+            </td>
+            <td class="p-4 font-semibold text-slate-200">R$ ${acao.cotacao.toFixed(2)}</td>
+            <td class="p-4 ${acao.fcfe < 0 ? 'text-rose-400' : 'text-emerald-300'} font-semibold">
+              R$ ${acao.fcfe.toFixed(2)}
+            </td>
+            <td class="p-4 text-cyan-300 font-bold">+${acao.crescimento.toFixed(1)}% a.a.</td>
+            <td class="p-4">
+              <span class="text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-800 px-2 py-0.5 rounded inline-block">
+                Ke: ${keCalculado.toFixed(2)}% a.a.
+              </span>
+              <div class="text-[10px] text-slate-400 font-mono mt-1">
+                Beta: ${acao.beta.toFixed(2)}
+              </div>
+            </td>
+            <td class="p-4 font-bold text-white text-base">R$ ${precoTeto.toFixed(2)}</td>
+            <td class="p-4 ${margem >= 0 && precoTeto > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">
+              ${precoTeto > 0 ? (margem >= 0 ? '+' : '') + margem.toFixed(2) + '%' : 'N/A'}
+            </td>
+            <td class="p-4">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-full border ${statusClass}">
+                ${statusTexto}
+              </span>
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex items-center justify-center gap-3">
+                <button onclick="abrirModalAjuste(${index})" title="Editar" class="text-slate-400 hover:text-emerald-400 transition"><i class="fa-solid fa-sliders"></i></button>
+                <button onclick="excluirAcao(${index})" title="Excluir" class="text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
 
-        const imgTest = new Image();
-        imgTest.onload = () => {
-            img.src = imgPathInFolder;
-        };
-        imgTest.onerror = () => {
-            img.src = imgPathInRoot;
-        };
-        imgTest.src = imgPathInFolder;
+      salvarEstadoLocal();
+    }
+
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+    async function buscarCotacaoAtivo(acao) {
+      const tickerYahoo = acao.ticker.includes('.') ? acao.ticker : `${acao.ticker}.SA`;
+      const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}?interval=1d&range=1d`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+      try {
+        const res = await fetch(proxyUrl);
+        
+        if (res.status === 429) {
+          console.warn(`[429] Rate limit atingido para ${acao.ticker}.`);
+          return false;
+        }
+
+        if (res.ok) {
+          const wrapper = await res.json();
+          const data = JSON.parse(wrapper.contents);
+
+          if (data?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+            const novoPreco = parseFloat(data.chart.result[0].meta.regularMarketPrice);
+            if (novoPreco > 0) {
+              acao.cotacao = novoPreco;
+              acao.statusApi = 'sucesso';
+              acao.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
+              return true;
+            }
+          }
+        }
+        acao.statusApi = 'erro';
+        return false;
+      } catch (e) {
+        acao.statusApi = 'erro';
+        return false;
+      }
+    }
+
+    async function buscarCotacoesYahoo() {
+      if (acoes.length === 0) return;
+
+      const btn = document.getElementById('btnAtualizarCotacoes');
+      const textoOriginal = btn.innerHTML;
+      btn.disabled = true;
+
+      acoes.forEach(acao => {
+        acao.statusApi = null;
+        acao.ultimaAtualizacao = null;
+      });
+      
+      renderizarTabela();
+
+      let atualizados = 0;
+      let erros = 0;
+      
+      const tamanhoLote = 3;
+      const tempoDelay = 400;
+
+      for (let i = 0; i < acoes.length; i += tamanhoLote) {
+        const lote = acoes.slice(i, i + tamanhoLote);
+        const fim = Math.min(i + tamanhoLote, acoes.length);
+
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Consultando ${fim} de ${acoes.length}...</span>`;
+
+        const resultadosLote = await Promise.all(lote.map(acao => buscarCotacaoAtivo(acao)));
+
+        resultadosLote.forEach(sucesso => {
+          if (sucesso) atualizados++;
+          else erros++;
+        });
+
+        renderizarTabela();
+
+        if (i + tamanhoLote < acoes.length) {
+          await delay(tempoDelay);
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = textoOriginal;
+
+      alert(`Processamento concluído!\n\n🟢 Atualizadas com sucesso: ${atualizados}\n🔴 Falhas/Mantidos: ${erros}\n\nPasse o mouse sobre os ícones ao lado dos tickers para detalhes.`);
+    }
+
+    function toggleOrigem() {
+      const conteudo = document.getElementById('conteudoOrigem');
+      const icone = document.getElementById('iconeOrigem');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Origem</span>';
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Origem</span>';
+      }
+    }
+
+    function toggleDidatico() {
+      const conteudo = document.getElementById('conteudoDidatico');
+      const icone = document.getElementById('iconeDidatico');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Guia</span>';
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Guia</span>';
+      }
+    }
+
+    function toggleCalculo() {
+      const conteudo = document.getElementById('conteudoCalculo');
+      const icone = document.getElementById('iconeCalculo');
+      if (conteudo.classList.contains('hidden')) {
+        conteudo.classList.remove('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-up"></i> <span>Ocultar Metodologia</span>';
+        if (window.MathJax && MathJax.typesetPromise) {
+          MathJax.typesetPromise();
+        }
+      } else {
+        conteudo.classList.add('hidden');
+        icone.innerHTML = '<i class="fa-solid fa-chevron-down"></i> <span>Expandir Metodologia</span>';
+      }
+    }
+
+    function abrirModalAjuste(index) {
+      ativoEmEdicao = index;
+      const acao = acoes[index];
+      
+      document.getElementById('modalTitulo').innerText = `Ajustar ${acao.ticker}`;
+      document.getElementById('modalTicker').value = acao.ticker;
+      document.getElementById('modalSetor').value = acao.setor;
+      document.getElementById('modalCotacao').value = acao.cotacao;
+      document.getElementById('modalFcfe').value = acao.fcfe;
+      document.getElementById('modalBeta').value = acao.beta;
+      document.getElementById('modalCrescimento').value = acao.crescimento;
+
+      document.getElementById('modalAjuste').classList.remove('hidden');
+    }
+
+    function abrirModalNovaAcao() {
+      ativoEmEdicao = null;
+      document.getElementById('modalTitulo').innerText = "Adicionar Nova Ação";
+      document.getElementById('modalTicker').value = "";
+      document.getElementById('modalSetor').value = "Energia (Transmissão)";
+      document.getElementById('modalCotacao').value = "";
+      document.getElementById('modalFcfe').value = "";
+      document.getElementById('modalBeta').value = "0.40";
+      document.getElementById('modalCrescimento').value = "4.0";
+
+      document.getElementById('modalAjuste').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalAjuste').classList.add('hidden');
+      ativoEmEdicao = null;
+    }
+
+    function salvarAjusteIndividual() {
+      const ticker = document.getElementById('modalTicker').value.trim().toUpperCase();
+      const setor = document.getElementById('modalSetor').value;
+      const cotacao = parseFloat(document.getElementById('modalCotacao').value) || 0;
+      const fcfe = parseFloat(document.getElementById('modalFcfe').value) || 0;
+      const beta = parseFloat(document.getElementById('modalBeta').value) || 1.0;
+      const crescimento = parseFloat(document.getElementById('modalCrescimento').value) || 0;
+
+      if (!ticker) {
+        alert("Por favor, informe o Ticker da ação.");
+        return;
+      }
+
+      const dadosAcao = { ticker, setor, cotacao, fcfe, beta, crescimento, statusApi: null, ultimaAtualizacao: null };
+
+      if (ativoEmEdicao !== null) {
+        acoes[ativoEmEdicao] = dadosAcao;
+      } else {
+        acoes.push(dadosAcao);
+      }
+
+      renderizarTabela();
+      fecharModal();
+    }
+
+    function excluirAcao(index) {
+      if (confirm(`Remover ação ${acoes[index].ticker}?`)) {
+        acoes.splice(index, 1);
+        renderizarTabela();
+      }
+    }
+
+    function abrirModalSalvar() { document.getElementById('modalSalvar').classList.remove('hidden'); }
+    function fecharModalSalvar() { document.getElementById('modalSalvar').classList.add('hidden'); }
+
+    function executarDownloadArquivo() {
+      let nomeArq = document.getElementById('nomeArquivoSalvar').value.trim() || "carteira-acoes";
+      if (!nomeArq.endsWith('.json')) nomeArq += '.json';
+
+      const backupData = {
+        parametrosMacro: {
+          taxaLivreRisco: parseFloat(document.getElementById('taxaLivreRisco').value) || 0,
+          premioAcoes: parseFloat(document.getElementById('premioAcoes').value) || 0,
+          crescimentoPerpetuo: parseFloat(document.getElementById('crescimentoPerpetuo').value) || 0
+        },
+        acoes: acoes
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nomeArq;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      fecharModalSalvar();
+    }
+
+    function carregarArquivoCarteira(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.parametrosMacro) {
+            document.getElementById('taxaLivreRisco').value = data.parametrosMacro.taxaLivreRisco ?? 6.50;
+            document.getElementById('premioAcoes').value = data.parametrosMacro.premioAcoes ?? 5.50;
+            document.getElementById('crescimentoPerpetuo').value = data.parametrosMacro.crescimentoPerpetuo ?? 2.50;
+          }
+
+          if (Array.isArray(data.acoes)) {
+            acoes = data.acoes;
+            renderizarTabela();
+            alert("Carteira carregada com sucesso!");
+          }
+        } catch (err) {
+          alert("Erro ao ler o arquivo JSON.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarEstadoLocal();
+      renderizarTabela();
     });
-});
-
-// Função para Exportação em PDF
-function exportToPDF() {
-    window.print();
-}
-
-// Função para Exportação em .DOCX (Microsoft Word)
-function exportToDOCX() {
-    const containerHtml = document.querySelector('.container').cloneNode(true);
-    
-    // Remove a barra de botões do HTML exportado
-    const exportBar = containerHtml.querySelector('.export-bar');
-    if (exportBar) exportBar.remove();
-
-    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
-        "xmlns:w='urn:schemas-microsoft-com:office:word' " +
-        "xmlns='http://www.w3.org/TR/REC-html40'>" +
-        "<head><meta charset='utf-8'><title>Artigo</title>" +
-        "<style>" +
-        "body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; color: #000; }" +
-        "h1 { font-size: 18pt; color: #1a5276; text-align: center; margin-bottom: 12pt; }" +
-        "h2 { font-size: 14pt; color: #21618c; border-bottom: 1px solid #21618c; margin-top: 18pt; }" +
-        "h3 { font-size: 12pt; color: #2e86c1; margin-top: 12pt; }" +
-        "p { text-align: justify; margin-bottom: 10pt; }" +
-        ".title-block { text-align: center; margin-bottom: 20pt; }" +
-        "figure { text-align: center; margin: 15pt 0; }" +
-        ".figure-caption { font-size: 10pt; font-style: italic; color: #555; }" +
-        "</style></head><body>";
-    const footer = "</body></html>";
-    
-    const fullHtml = header + containerHtml.innerHTML + footer;
-
-    const blob = new Blob(['\ufeff' + fullHtml], {
-        type: 'application/msword'
-    });
-    
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Artigo_IA_Generativa_Cartografia.doc';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-</script>
-
+  </script>
 </body>
 </html>
